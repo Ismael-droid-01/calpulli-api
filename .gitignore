@@ -1,4 +1,12 @@
 preprocess_server/storage
 preprocess_server/venv
 ppml_server/venv
-.vscode
+.vscode/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*.log
+*.sqlite3
+*.db
+.DS_Store
