@@ -65,6 +65,9 @@ services:
     networks:
       - ppml-net
     command: uvicorn ppml.server:app --host ${PPML_HOST:-0.0.0.0} --port ${PPML_PORT:-6000}
+    depends_on:
+      - ppml-db
+      - xolo
 volumes:
   mysql_data:
   xolo-db:
