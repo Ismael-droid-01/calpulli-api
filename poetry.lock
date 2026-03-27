@@ -1397,23 +1397,6 @@ files = [
 typing-extensions = ">=4.14.1"
 
 [[package]]
-name = "pyfhel"
-version = "3.5.0"
-description = "Python for Homomorphic Encryption Libraries"
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "pyfhel-3.5.0.tar.gz", hash = "sha256:0375b83b5a83026924f59db25c4efa9f27e1e8a66d004658f4d24195986a04b6"},
-]
-
-[package.dependencies]
-numpy = ">=2.1"
-
-[package.extras]
-test = ["coverage (>=6.4)", "pytest (>=6)", "pytest-cov (>=3.0)"]
-
-[[package]]
 name = "pygments"
 version = "2.19.2"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -1794,6 +1777,28 @@ test = ["PySocks (>=1.5.6,!=1.5.7)", "pytest (>=3)", "pytest-cov", "pytest-httpb
 use-chardet-on-py3 = ["chardet (>=3.0.2,<8)"]
 
 [[package]]
+name = "roryclient"
+version = "0.1.13"
+description = ""
+optional = false
+python-versions = ">=3.10,<4.0"
+groups = ["main"]
+files = [
+    {file = "roryclient-0.1.13-py3-none-any.whl", hash = "sha256:355c2bbcf48b738f6d8eeeefde78400403d9faa861c784cc473f1c2926303710"},
+    {file = "roryclient-0.1.13.tar.gz", hash = "sha256:c417ccc9fb680283fabef2bab7a1ba361ce3a76d7ac22acb25ec3e04d0569f40"},
+]
+
+[package.dependencies]
+option = ">=2.1.0,<3.0.0"
+pydantic = ">=2.11.7,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "test"
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -2068,4 +2073,4 @@ tomli = {version = ">=2.0", markers = "python_full_version < \"3.11.0\""}
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "2152d33bf48db42b2d4dd38632ff5536ea2c133fee5f4599584900f31d194cca"
+content-hash = "835c543e8f7ae112efed27ece8b35e556fb4159cbf65fe06d0e52bef05d8b4e3"
