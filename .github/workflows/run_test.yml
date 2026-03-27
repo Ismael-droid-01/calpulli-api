@@ -1,0 +1,82 @@
+name: Run Unit Test via Pytest  
+  
+on:
+  push: 
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+    paths:
+      - "ppml/**"
+      - "tests/**"
+      - "pyproject.toml"
+jobs:  
+  build:  
+    runs-on: ubuntu-latest  
+    env:
+      PPML_LOG_PATH: ${{ github.workspace }}/log
+      PPML_ENV_FILE_PATH: .env.dev
+    strategy:  
+      matrix:  
+        python-version: ["3.10"]  
+    steps:  
+      - uses: actions/checkout@v3  
+
+      - name: Set up Python ${{ matrix.python-version }}  
+        if: ${{!env.ACT}}
+        uses: actions/setup-python@v4  
+        with:  
+          python-version: ${{ matrix.python-version }}  
+      
+
+      - name: Cache Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-2.1.3-${{ runner.os }}
+
+      - name: Install Poetry
+        run: |
+          pip install poetry==2.1.3 --break-system-packages
+          
+          # Replicate the snok/install-poetry configuration
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
+        
+      - name: Load cached venv
+        if: ${{!env.ACT}}
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      
+      - name: Install Dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry lock && poetry install --without docs --no-interaction
+
+      - name: Prepare log folder
+        run: mkdir -p "${PPML_LOG_PATH}"
+
+      - name: Start PPML Service
+        run: |
+          chmod +x deploy.sh && ./deploy.sh ${{ env.PPML_ENV_FILE_PATH || '.env.dev' }}
+        env:
+          PPML_ENV_FILE_PATH: ${{  env.PPML_ENV_FILE_PATH || '.env.dev' }}
+
+      - name: Lint with Ruff  
+        run: |  
+          pip install ruff  
+          ruff check .  
+        continue-on-error: true  
+        
+      - name: Test with pytest  
+        run: |  
+          poetry run coverage run -m pytest tests/ -v -s
+        env:
+          PPML_ENV_FILE_PATH: ${{env.PPML_ENV_FILE_PATH || '.env.dev' }}
+     
+      - name: Generate Coverage Report  
+        run: |  
+          poetry run coverage report -m
