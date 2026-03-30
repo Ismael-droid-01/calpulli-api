@@ -81,6 +81,10 @@ jobs:
           ruff check .  
         continue-on-error: true  
         
+      - name: Create scope
+        run: |
+          chmod +x ./create_scope.sh 
+          ./create_scope.sh
       - name: Test with pytest  
         run: |  
           poetry run coverage run -m pytest tests/ -v -s
