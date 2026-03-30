@@ -1,6 +1,5 @@
 import ppml.services as S
 from xolo.client import XoloClient
-import os
 from fastapi import Depends
 from ppml.repositories import UsersProfilesRepository
 import ppml.config as Cfg

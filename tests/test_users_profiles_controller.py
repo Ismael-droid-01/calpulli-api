@@ -1,8 +1,7 @@
 import pytest
-from httpx import AsyncClient,ASGITransport
+from httpx import AsyncClient, ASGITransport
 from ppml.server import app
 import ppml.dtos as DTO
-
 from uuid import uuid4
 from tortoise import Tortoise
 import asyncio

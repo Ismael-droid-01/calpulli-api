@@ -1,6 +1,4 @@
 from fastapi import APIRouter as Router,Depends,HTTPException
-from fastapi import status
-from commonx.dto.xolo import AuthAttemptDTO
 import ppml.middleware as MX
 import ppml.services as S
 import ppml.dtos as DTO

@@ -8,7 +8,7 @@ from ppml.repositories import UsersProfilesRepository
 import os
 L = Log(
     name=__name__,
-    path=os.environ.get("PPML_LOG_PATH","./logs/ppml.log"),
+    path=os.environ.get("PPML_LOG_PATH","./logs/"),
 )
 class UsersService:
     def __init__(self,repository: UsersProfilesRepository, xolo:XoloClient):
@@ -25,10 +25,9 @@ class UsersService:
                 scope      = "ppml",
                 expiration = "1y",
             )
-            print(f"Xolo create_user result: {result}")
             if result.is_err:
-                L.error(f"Error creating user: {result.err()}")
-                return Err(result.err())
+                L.error(f"Error creating user: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
             
             xolo_response = result.unwrap()
             user_id       = xolo_response.key
@@ -41,12 +40,12 @@ class UsersService:
                 last_name  = dto.last_name,
             )
             if user_result.is_err:
-                L.error(f"Error saving user to repository: {user_result.err()}")
-                return Err(user_result.err())
+                L.error(f"Error saving user to repository: {user_result.unwrap_err()}")
+                return Err(user_result.unwrap_err())
             
             user = user_result.unwrap()
             return Ok(DTO.UserCreatedResponseDTO(
-                user_id  = str(user.id),
+                user_id  = user.user_id,
                 username = user.username,
                 email    = user.email
             ))
@@ -63,8 +62,8 @@ class UsersService:
                 renew_token = True
             )
             if result.is_err:
-                L.error(f"Error logging in: {result.err()}")
-                return Err(result.err())
+                L.error(f"Error logging in: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
             xolo_response = result.unwrap()
             return Ok(DTO.UserLoggedInResponseDTO(
                 access_token = xolo_response.access_token,
