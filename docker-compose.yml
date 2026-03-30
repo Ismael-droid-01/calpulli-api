@@ -1,0 +1,82 @@
+services:
+  ppml-db:
+    profiles: [prod,dev]
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ppml_database
+      MYSQL_USER: samuel_user
+      MYSQL_PASSWORD: samuel_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ppml-net
+  xolo-db:
+    profiles: [prod,dev]
+    image: mongo:8-noble
+    ports:
+      - ${XOLO_MONGODB_PORT-27018}:27017
+    volumes:
+      - xolo-db:/data/db
+      # - ./db/mongod.conf:/etc/mongo/mongod.conf:ro
+    networks:
+      - ppml-net
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+
+
+  xolo-cache:
+    profiles: [prod,dev]
+    image: redis:7.0.11-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - xolo-cache-data:/data
+    networks:
+      - ppml-net
+    restart: unless-stopped
+
+  xolo:
+    profiles: [prod,dev]
+    image: ${XOLO_IMAGE-xolo:api-0.0.11a2}
+    container_name: xolo-api
+    env_file:
+      - .env.dev
+    ports:
+      - ${XOLO_PORT-10000}:${XOLO_PORT-10000}
+    volumes:
+      # - /log:/log
+      - xolo-data:/xolo
+    networks:
+      - ppml-net
+    restart: unless-stopped
+    depends_on:
+      - xolo-db
+    command: uvicorn xoloapi.server:app --host ${XOLO_HOST-0.0.0.0} --port ${XOLO_PORT-10000} --log-level debug
+
+  ppml:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${PPML_IMAGE_NAME:-ppml:api-0.0.1a0}
+    env_file:
+      - .env.dev
+    ports:
+      - ${PPML_PORT:-6000}:${PPML_PORT:-6000}
+    networks:
+      - ppml-net
+    command: uvicorn ppml.server:app --host ${PPML_HOST:-0.0.0.0} --port ${PPML_PORT:-6000}
+    depends_on:
+      - ppml-db
+      - xolo
+volumes:
+  mysql_data:
+  xolo-db:
+  xolo-cache-data:
+  xolo-data:
+networks:
+ ppml-net:

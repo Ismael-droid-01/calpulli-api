@@ -1,0 +1,1 @@
+uvicorn ppml.server:app --host ${APP_HOST:-0.0.0.0} --port ${APP_PORT:-5000} --reload
