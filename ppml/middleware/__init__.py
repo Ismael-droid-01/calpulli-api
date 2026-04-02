@@ -57,7 +57,7 @@ async def __get_current_user(
         if user_profile_result.is_err:
             e = user_profile_result.unwrap_err()
             L.error({
-                "msg": f"Error getting user profile: {e.detail}",
+                "msg": f"Error getting user profile: {e}",
             })
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
         user_profile    = user_profile_result.unwrap()
