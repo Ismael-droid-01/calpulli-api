@@ -28,7 +28,7 @@ def get_users_service(xolo_client:S.XoloClient = Depends(get_xolo_client))->S.Us
 
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 
 async def __get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)], 
