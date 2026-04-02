@@ -10,10 +10,21 @@ L = Log(
     name=__name__,
     path=os.environ.get("PPML_LOG_PATH","./logs/"),
 )
-class UsersService:
+class UserProfilesService:
     def __init__(self,repository: UsersProfilesRepository, xolo:XoloClient):
         self.repository = repository
         self.xolo = xolo
+    async def get_by_username(self, username:str)->Result[UserProfile,Exception]:
+        try:
+            result = await self.repository.get_by_username(username=username)
+            if result.is_err:
+                L.error(f"Error getting user profile by username: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            user_profile = result.unwrap()
+            return Ok(user_profile)
+        except Exception as e:
+            L.error(f"Exception occurred while getting user profile by username: {e}")
+            return Err(e)
     async def create_user(self,dto:DTO.UserCreateFormDTO)->Result[DTO.UserCreatedResponseDTO,Exception]:
         try:
             result = self.xolo.signup(
