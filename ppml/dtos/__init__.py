@@ -25,4 +25,13 @@ class UserLoggedInResponseDTO(BaseModel):
     last_name: str = Field(..., description="The last name of the logged-in user")
     access_token: str = Field(..., description="The authentication token for the signed-in user")
     temporal_secret: str = Field(..., description="A temporary secret for additional security measures during the session")
-    
+
+class UserProfileDTO(BaseModel):
+    user_id: str = Field(..., description="The unique identifier of the user")
+    username: str = Field(..., description="The username of the user")
+    email: str = Field(..., description="The email address of the user")
+    first_name: str = Field(..., description="The first name of the user")
+    last_name: str = Field(..., description="The last name of the user")
+    is_disabled: bool = Field(default=False, description="Indicates whether the user account is disabled")
+    created_at: str = Field(..., description="The ISO8601 timestamp when the user profile was created")
+    updated_at: str = Field(..., description="The ISO8601 timestamp when the user profile was last updated")
