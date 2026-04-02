@@ -11,3 +11,4 @@ ppml_server/venv
 *.db
 .DS_Store
 .coverage
+logs/
