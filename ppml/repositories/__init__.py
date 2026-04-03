@@ -98,3 +98,53 @@ class AlgorithmsRepository:
                 return Err(Exception(f"Algorithm with id {algorithm_id} not found."))
         except Exception as e:
             return Err(e)
+
+class NumericParametersRepository:
+
+    async def create(self, algorithm_id:int, type:str, default_value:float, max_value:float)->Result[NumericParameter,Exception]:
+        try:
+            algorithm = await Algorithm.get_or_none(algorithm_id=algorithm_id)
+            if not algorithm:
+                raise Exception(f"Algorithm with id {algorithm_id} not found.")
+
+            parameter = await NumericParameter.create(
+                algorithm_id    = algorithm_id,
+                type            = type,
+                default_value   = default_value,
+                max_value       = max_value
+            )
+            return Ok(parameter)
+        except Exception as e:
+            print(f"Error creating numeric parameter: {e}")
+            return Err(e)
+    
+    async def get_by_id(self, parameter_id:int)->Result[NumericParameter,Exception]:
+        try:
+            parameter = await NumericParameter.get_or_none(parameter_id=parameter_id)
+            if parameter:
+                return Ok(parameter)
+            else:
+                return Err(Exception(f"Numeric parameter with id {parameter_id} not found."))
+        except Exception as e:
+            return Err(e)
+        
+    async def get_by_algorithm_id(self, algorithm_id:int)->Result[list[NumericParameter],Exception]:
+        try:
+            parameters = await NumericParameter.filter(algorithm_id=algorithm_id).all()
+            if parameters:
+                return Ok(parameters)
+            else:
+                return Err(Exception(f"No numeric parameters found for algorithm with id {algorithm_id}."))
+        except Exception as e:
+            return Err(e)
+
+    async def delete_by_id(self, parameter_id:int)->Result[bool,Exception]:
+        try:
+            parameter = await NumericParameter.get_or_none(parameter_id=parameter_id)
+            if parameter:
+                await parameter.delete()
+                return Ok(True)
+            else:
+                return Err(Exception(f"Numeric parameter with id {parameter_id} not found."))
+        except Exception as e:
+            return Err(e)
