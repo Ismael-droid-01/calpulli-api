@@ -16,6 +16,7 @@ class UsersProfilesRepository:
                 email      = email,
                 first_name = first_name,
                 last_name  = last_name,
+                is_disabled = False
             )
             return Ok(profile)
         except Exception as e:

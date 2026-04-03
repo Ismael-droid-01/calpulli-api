@@ -8,6 +8,7 @@ class UserProfile(Model):
     email      = fields.CharField(max_length=255, unique=True)
     first_name = fields.CharField(max_length=255)
     last_name  = fields.CharField(max_length=255)
+    is_disabled = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
