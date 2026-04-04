@@ -206,7 +206,9 @@ class NumericParametersService:
                     name            = param.name,
                     type            = param.type,
                     default_value   = param.default_value,
-                    max_value       = param.max_value
+                    max_value       = param.max_value,
+                    created_at      = param.created_at.isoformat(),
+                    updated_at      = param.updated_at.isoformat()
                 ) for param in parameters
             ])
         except Exception as e:
@@ -223,7 +225,6 @@ class StringParametersService:
             result = await self.repository.create(
                 algorithm_id    = dto.algorithm_id,
                 name            = dto.name,
-                type            = dto.type,
                 default_value   = dto.default_value
             )
             if result.is_err:
@@ -234,7 +235,6 @@ class StringParametersService:
                 parameter_id    = parameter.parameter_id,
                 algorithm_id    = parameter.algorithm_id,
                 name            = parameter.name,
-                type            = parameter.type,
                 default_value   = parameter.default_value
             ))
         except Exception as e:
@@ -253,8 +253,9 @@ class StringParametersService:
                     parameter_id    = param.parameter_id,
                     algorithm_id    = param.algorithm_id,
                     name            = param.name,
-                    type            = param.type,
-                    default_value   = param.default_value
+                    default_value   = param.default_value,
+                    created_at      = param.created_at.isoformat(),
+                    updated_at      = param.updated_at.isoformat()
                 ) for param in parameters
             ])
         except Exception as e:
