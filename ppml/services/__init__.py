@@ -373,3 +373,56 @@ class StringParametersService:
         except Exception as e:
             L.error(f"Exception occurred while getting string parameters by algorithm id: {e}")
             return Err(e)
+    
+    async def get_string_parameter_by_id(self, parameter_id:int)->Result[DTO.StringParameterDTO,Exception]:
+        try:
+            result = await self.repository.get_by_id(parameter_id=parameter_id)
+            if result.is_err:
+                L.error(f"Error getting string parameter by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            param = result.unwrap()
+            return Ok(DTO.StringParameterDTO(
+                parameter_id    = param.parameter_id,
+                algorithm_id    = param.algorithm_id,
+                name            = param.name,
+                default_value   = param.default_value,
+                created_at      = param.created_at.isoformat(),
+                updated_at      = param.updated_at.isoformat()
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while getting string parameter by id: {e}")
+            return Err(e)
+
+    async def update_string_parameter(self, parameter_id:int, dto: DTO.StringParameterCreateFormDTO)->Result[DTO.StringParameterDTO,Exception]:
+        try:
+            result = await self.repository.update(
+                parameter_id    = parameter_id,
+                name            = dto.name,
+                default_value   = dto.default_value
+            )
+            if result.is_err:
+                L.error(f"Error updating string parameter: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            param = result.unwrap()
+            return Ok(DTO.StringParameterDTO(
+                parameter_id    = param.parameter_id,
+                algorithm_id    = param.algorithm_id,
+                name            = param.name,
+                default_value   = param.default_value,
+                created_at      = param.created_at.isoformat(),
+                updated_at      = param.updated_at.isoformat()
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while updating string parameter: {e}")
+            return Err(e)
+    
+    async def delete_string_parameter_by_id(self, parameter_id:int)->Result[bool,Exception]:
+        try:
+            result = await self.repository.delete_by_id(parameter_id=parameter_id)
+            if result.is_err:
+                L.error(f"Error deleting string parameter by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while deleting string parameter by id: {e}")
+            return Err(e)

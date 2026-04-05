@@ -225,6 +225,19 @@ class StringParametersRepository:
                 return Err(Exception(f"No string parameters found for algorithm with id {algorithm_id}."))
         except Exception as e:
             return Err(e)
+        
+    async def update(self, parameter_id:int, name:str, default_value:str)->Result[StringParameter,Exception]:
+        try:
+            parameter = await StringParameter.get_or_none(parameter_id=parameter_id)
+            if parameter:
+                parameter.name = name
+                parameter.default_value = default_value
+                await parameter.save()
+                return Ok(parameter)
+            else:
+                return Err(Exception(f"String parameter with id {parameter_id} not found."))
+        except Exception as e:
+            return Err(e)
     
     async def delete_by_id(self, parameter_id:int)->Result[bool,Exception]:
         try:

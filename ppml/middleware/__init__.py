@@ -95,3 +95,6 @@ def get_algorithms_service() -> S.AlgorithmsService:
 
 def get_numeric_parameters_service() -> S.NumericParametersService:
     return S.NumericParametersService(repository=NumericParametersRepository())
+
+def get_string_parameters_service() -> S.StringParametersService:
+    return S.StringParametersService(repository=S.StringParametersRepository())
