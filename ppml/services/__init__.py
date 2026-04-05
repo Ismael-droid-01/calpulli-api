@@ -267,6 +267,65 @@ class NumericParametersService:
         except Exception as e:
             L.error(f"Exception occurred while getting numeric parameters by algorithm id: {e}")
             return Err(e)
+    
+    async def get_numeric_parameter_by_id(self, parameter_id:int)->Result[DTO.NumericParameterDTO,Exception]:
+        try:
+            result = await self.repository.get_by_id(parameter_id=parameter_id)
+            if result.is_err:
+                L.error(f"Error getting numeric parameter by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            param = result.unwrap()
+            return Ok(DTO.NumericParameterDTO(
+                parameter_id    = param.parameter_id,
+                algorithm_id    = param.algorithm_id,
+                name            = param.name,
+                type            = param.type,
+                default_value   = param.default_value,
+                max_value       = param.max_value,
+                created_at      = param.created_at.isoformat(),
+                updated_at      = param.updated_at.isoformat()
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while getting numeric parameter by id: {e}")
+            return Err(e)
+    
+    async def update_numeric_parameter(self, parameter_id:int, dto: DTO.NumericParameterCreateFormDTO)->Result[DTO.NumericParameterDTO,Exception]:
+        try:
+            result = await self.repository.update(
+                parameter_id    = parameter_id,
+                name            = dto.name,
+                type            = dto.type,
+                default_value   = dto.default_value,
+                max_value       = dto.max_value
+            )
+            if result.is_err:
+                L.error(f"Error updating numeric parameter: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            param = result.unwrap()
+            return Ok(DTO.NumericParameterDTO(
+                parameter_id    = param.parameter_id,
+                algorithm_id    = param.algorithm_id,
+                name            = param.name,
+                type            = param.type,
+                default_value   = param.default_value,
+                max_value       = param.max_value,
+                created_at      = param.created_at.isoformat(),
+                updated_at      = param.updated_at.isoformat()
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while updating numeric parameter: {e}")
+            return Err(e)
+    
+    async def delete_numeric_parameter_by_id(self, parameter_id:int)->Result[bool,Exception]:
+        try:
+            result = await self.repository.delete_by_id(parameter_id=parameter_id)
+            if result.is_err:
+                L.error(f"Error deleting numeric parameter by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while deleting numeric parameter by id: {e}")
+            return Err(e)
 
 class StringParametersService:
     

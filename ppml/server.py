@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import ppml.config as Cfg
-from ppml.controllers import ppml_router,users_profile_router, algorithms_router
+from ppml.controllers import ppml_router,users_profile_router, algorithms_router, numeric_parameters_router
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 from contextlib import asynccontextmanager
@@ -40,3 +40,4 @@ app.add_middleware(
 app.include_router(ppml_router,tags=["ppml"])
 app.include_router(users_profile_router,tags=["users_profile"])
 app.include_router(algorithms_router,tags=["algorithms"])
+app.include_router(numeric_parameters_router,tags=["numeric_parameters"])
