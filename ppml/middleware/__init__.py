@@ -2,7 +2,7 @@ import ppml.services as S
 from xolo.client import XoloClient
 from typing import Annotated, Optional
 from fastapi import Depends,Header,HTTPException
-from ppml.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository
+from ppml.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository,StringParametersRepository
 from fastapi.security import OAuth2PasswordBearer
 import ppml.config as Cfg
 import ppml.dtos as DTO
@@ -97,4 +97,4 @@ def get_numeric_parameters_service() -> S.NumericParametersService:
     return S.NumericParametersService(repository=NumericParametersRepository())
 
 def get_string_parameters_service() -> S.StringParametersService:
-    return S.StringParametersService(repository=S.StringParametersRepository())
+    return S.StringParametersService(repository=StringParametersRepository())
