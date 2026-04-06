@@ -5,28 +5,6 @@ from tortoise import Tortoise
 from ppml.server import app
 from ppml.dtos import AlgorithmCreateFormDTO
 
-TEST_DB_URL = "mysql://samuel_user:samuel_password@localhost:3306/ppml_database"
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(autouse=True, scope="session")
-async def initialize_tests():
-    await Tortoise.init(
-        db_url=TEST_DB_URL,
-        modules={"models": ["ppml.models"]}
-    )
-    await Tortoise.generate_schemas()
-    yield
-    await Tortoise.close_connections()
-
-
 @pytest.mark.asyncio
 async def test_create_algorithm_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

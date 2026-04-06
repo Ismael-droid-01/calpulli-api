@@ -5,29 +5,7 @@ from tortoise import Tortoise
 from ppml.server import app
 from ppml.dtos import AlgorithmCreateFormDTO, NumericParameterCreateFormDTO
 
-TEST_DB_URL = "mysql://samuel_user:samuel_password@localhost:3306/ppml_database"
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(autouse=True, scope="session")
-async def initialize_tests():
-    await Tortoise.init(
-        db_url=TEST_DB_URL,
-        modules={"models": ["ppml.models"]}
-    )
-    await Tortoise.generate_schemas()
-    yield
-    await Tortoise.close_connections()
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def algorithm_id():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         payload = AlgorithmCreateFormDTO(name="TestAlgoForParams", type="regression").model_dump()
