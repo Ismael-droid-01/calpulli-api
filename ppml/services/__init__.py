@@ -4,7 +4,7 @@ from option import Err,Ok,Result
 import ppml.dtos as DTO
 from xolo.client import XoloClient
 from ppml.log import Log
-from ppml.repositories import UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
+from ppml.repositories import TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
 import os
 
 L = Log(
@@ -461,4 +461,59 @@ class StringParametersService:
             return Ok(result.unwrap())
         except Exception as e:
             L.error(f"Exception occurred while deleting string parameter by id: {e}")
+            return Err(e)
+
+class TasksService:
+
+    def __init__(self, repository: TasksRepository):
+        self.repository = repository
+
+    async def create_task(
+        self, 
+        user_id: str,           
+        dto: DTO.TaskCreateFormDTO
+    ) -> Result[DTO.TaskCreatedResponseDTO, Exception]:
+        try:
+            result = await self.repository.create(
+                user_id       = user_id,
+                algorithm_id  = dto.algorithm_id,
+                response_time = dto.response_time
+            )
+            if result.is_err:
+                L.error(f"Error creating task: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            task = result.unwrap()
+            return Ok(DTO.TaskCreatedResponseDTO(
+                task_id       = task.task_id,
+                user_id       = user_id,
+                algorithm_id  = dto.algorithm_id,
+                response_time = task.response_time,
+                created_at    = task.created_at.isoformat(),
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while creating task: {e}")
+            return Err(e)
+
+    async def get_tasks_by_user(
+        self, 
+        user_id: str
+    ) -> Result[list[DTO.TaskDTO], Exception]:
+        try:
+            result = await self.repository.get_by_user_id(user_id=user_id)
+            if result.is_err:
+                L.error(f"Error getting tasks by user: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            tasks = result.unwrap()
+            return Ok([
+                DTO.TaskDTO(
+                    task_id       = task.task_id,
+                    user_id       = user_id,
+                    algorithm_id  = task.algorithm_id,
+                    response_time = task.response_time,
+                    created_at    = task.created_at.isoformat(),
+                    updated_at    = task.updated_at.isoformat(),
+                ) for task in tasks
+            ])
+        except Exception as e:
+            L.error(f"Exception occurred while getting tasks by user: {e}")
             return Err(e)

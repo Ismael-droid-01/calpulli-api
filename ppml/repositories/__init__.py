@@ -280,8 +280,8 @@ class TasksRepository:
                 raise Exception(f"Algorithm with id {algorithm_id} not found.")
             
             task = await Task.create(
-                user_id       = user,
-                algorithm_id  = algorithm,
+                user       = user,
+                algorithm  = algorithm,
                 response_time = response_time
             )
             return Ok(task)
@@ -305,7 +305,7 @@ class TasksRepository:
             if not user:
                 return Err(Exception(f"User with id {user_id} not found."))
             
-            tasks = await Task.filter(user_id=user).all()
+            tasks = await Task.filter(user_id=user_id).all()
             return Ok(tasks)
         except Exception as e:
             return Err(e)

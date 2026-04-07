@@ -99,3 +99,21 @@ class AlgorithmParametersDTO(BaseModel):
     algorithm_id: int = Field(..., description="The unique identifier of the algorithm")
     numeric_parameters: list[NumericParameterDTO] = Field(default=[], description="List of numeric parameters for the algorithm")
     string_parameters: list[StringParameterDTO] = Field(default=[], description="List of string parameters for the algorithm")
+
+class TaskCreateFormDTO(BaseModel):
+    algorithm_id: int = Field(..., description="The unique identifier of the algorithm to be executed")
+    response_time: float = Field(..., description="The expected response time for the task execution in seconds")
+
+class TaskCreatedResponseDTO(BaseModel):
+    task_id: int = Field(..., description="The unique identifier of the created task")
+    user_id: str = Field(..., description="The unique identifier of the user who created the task")
+    algorithm_id: int = Field(..., description="The unique identifier of the algorithm to be executed")
+    response_time: float = Field(..., description="The expected response time for the task execution in seconds")
+
+class TaskDTO(BaseModel):
+    task_id: int = Field(..., description="The unique identifier of the task")
+    user_id: str = Field(..., description="The unique identifier of the user who created the task")
+    algorithm_id: int = Field(..., description="The unique identifier of the algorithm to be executed")
+    response_time: float = Field(..., description="The expected response time for the task execution in seconds")
+    created_at: str = Field(..., description="The ISO8601 timestamp when the task was created")
+    updated_at: str = Field(..., description="The ISO8601 timestamp when the task was last updated")
