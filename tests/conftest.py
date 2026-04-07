@@ -34,9 +34,9 @@ async def initialize_tests():
 
 @pytest.fixture(autouse=True)
 async def clean_database():
-    await _clean()
+    #await _clean()
     yield
-    await _clean()
+    #await _clean()
 
 async def _clean():
     await Task.all().delete()         

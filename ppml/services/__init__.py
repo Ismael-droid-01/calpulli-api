@@ -517,3 +517,21 @@ class TasksService:
         except Exception as e:
             L.error(f"Exception occurred while getting tasks by user: {e}")
             return Err(e)
+    
+    async def get_task_by_id(self, task_id: int) -> Result[DTO.TaskDTO, Exception]:
+        try:
+            result = await self.repository.get_by_id(task_id=task_id)
+            if result.is_err:
+                return Err(result.unwrap_err())
+            task = result.unwrap()
+            return Ok(DTO.TaskDTO(
+                task_id       = task.task_id,
+                user_id       = task.user_id,
+                algorithm_id  = task.algorithm_id,
+                response_time = task.response_time,
+                created_at    = task.created_at.isoformat(),
+                updated_at    = task.updated_at.isoformat(),
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while getting task by id: {e}")
+            return Err(e)
