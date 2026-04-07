@@ -58,3 +58,24 @@ class StringParameter(Model):
 
     class Meta:
         table = "string_parameters"
+
+class Task(Model):
+    task_id         = fields.IntField(primary_key=True)
+    algorithm       = fields.ForeignKeyField(
+        "models.Algorithm", 
+        related_name    =   "tasks",
+        to_field        =   "algorithm_id",
+        on_delete       =   fields.RESTRICT
+    )
+    user            = fields.ForeignKeyField(
+        "models.UserProfile", 
+        related_name    =   "tasks",
+        to_field        =   "user_id",
+        on_delete       =   fields.RESTRICT
+    )
+    response_time    = fields.FloatField() 
+    created_at      = fields.DatetimeField(auto_now_add=True)
+    updated_at      = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "tasks"
