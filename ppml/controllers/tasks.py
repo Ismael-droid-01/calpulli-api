@@ -44,3 +44,15 @@ async def get_task(
         return task
     else:
         raise HTTPException(status_code=404, detail=str(result.unwrap_err()))
+
+@router.get("/{task_id}/results", response_model=list[DTO.ResultDTO])
+async def get_results_for_task(
+    task_id:      int,
+    current_user: DTO.UserProfileDTO = Depends(MX.get_current_user),
+    service:      S.ResultsService     = Depends(MX.get_results_service),
+):
+    result = await service.get_results_by_task_id(task_id=task_id)
+    if result.is_ok:
+        return result.unwrap()
+    else:
+        raise HTTPException(status_code=404, detail=str(result.unwrap_err()))

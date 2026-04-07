@@ -101,3 +101,6 @@ def get_string_parameters_service() -> S.StringParametersService:
 
 def get_tasks_service() -> S.TasksService:
     return S.TasksService(repository=S.TasksRepository())
+
+def get_results_service() -> S.ResultsService:  
+    return S.ResultsService(repository=S.ResultsRepository())
