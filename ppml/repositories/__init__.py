@@ -1,5 +1,5 @@
 
-from ppml.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task
+from ppml.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
 from option import Err,Ok,Result
 
 class UsersProfilesRepository:
@@ -307,5 +307,34 @@ class TasksRepository:
             
             tasks = await Task.filter(user_id=user_id).all()
             return Ok(tasks)
+        except Exception as e:
+            return Err(e)
+    
+class ResultsRepository:
+    
+    async def create(self, task_id: int, format: str, url: str) -> Result[ResultModel, Exception]:
+        try:
+            task = await Task.get_or_none(task_id=task_id)
+            if not task:
+                raise Exception(f"Task with id {task_id} not found.")
+            
+            result = await ResultModel.create(
+                task        = task,
+                format      = format,
+                url         = url
+            )
+            return Ok(result)
+        except Exception as e:
+            print(f"Error creating result: {e}")
+            return Err(e)
+
+    async def get_by_task_id(self, task_id: int) -> Result[list[ResultModel], Exception]:
+        try:
+            task = await Task.get_or_none(task_id=task_id)
+            if not task:
+                return Err(Exception(f"Task with id {task_id} not found."))
+            
+            results = await ResultModel.filter(task_id=task_id).all()
+            return Ok(results)
         except Exception as e:
             return Err(e)
