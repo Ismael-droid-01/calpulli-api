@@ -79,3 +79,19 @@ class Task(Model):
 
     class Meta:
         table = "tasks"
+
+class Result(Model):
+    result_id   = fields.IntField(primary_key=True)
+    task        = fields.ForeignKeyField(
+        "models.Task",
+        related_name    = "results",
+        to_field        = "task_id",
+        on_delete       = fields.CASCADE 
+    )
+    format      = fields.CharField(max_length=100)
+    url         = fields.CharField(max_length=500)
+    created_at  = fields.DatetimeField(auto_now_add=True)
+    updated_at  = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "results"
