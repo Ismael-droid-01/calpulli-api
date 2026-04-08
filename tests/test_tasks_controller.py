@@ -5,38 +5,7 @@ from ppml.repositories import TasksRepository, UsersProfilesRepository, Algorith
 from ppml.dtos import TaskCreateFormDTO, UserProfileDTO
 from ppml.server import app
 import ppml.middleware as MX
-
-async def create_test_user(suffix: str = ""):
-    repo = UsersProfilesRepository()
-    result = await repo.create(
-        user_id    = f"test-user-id-{suffix}",
-        username   = f"testuser{suffix}",
-        email      = f"testuser{suffix}@test.com",
-        first_name = "Test",
-        last_name  = "User",
-    )
-    return result.unwrap()
-
-async def create_test_algorithm(name: str = "TestAlgo"):
-    repo = AlgorithmsRepository()
-    result = await repo.create(name=name, type="classification")
-    return result.unwrap()
-
-def mock_current_user(user_id: str, username: str):
-    """Genera un override de get_current_user para simular autenticación."""
-    async def _mock():
-        return UserProfileDTO(
-            user_id    = user_id,
-            username   = username,
-            email      = f"{username}@test.com",
-            first_name = "Test",
-            last_name  = "User",
-            is_disabled= False,
-            created_at = "2024-01-01T00:00:00",
-            updated_at = "2024-01-01T00:00:00",
-        )
-    return _mock
-
+from tests.conftest import create_test_algorithm, create_test_user, mock_current_user
 
 @pytest.mark.asyncio
 async def test_create_task_service():

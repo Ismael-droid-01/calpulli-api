@@ -1,33 +1,11 @@
 from httpx import ASGITransport, AsyncClient
 import pytest
-from ppml.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository
-from ppml.dtos import ResultCreateFormDTO, TaskCreateFormDTO
+from ppml.dtos import ResultCreateFormDTO
+from ppml.repositories import ResultsRepository
 from ppml.services import ResultsService
 from ppml.server import app
 import ppml.middleware as MX
-from tests.test_tasks_controller import mock_current_user
-
-async def create_test_user(suffix: str = ""):
-    repo = UsersProfilesRepository()
-    result = await repo.create(
-        user_id    = f"test-user-id-{suffix}",
-        username   = f"testuser{suffix}",
-        email      = f"testuser{suffix}@example.com",
-        first_name = f"TestFirstName{suffix}",
-        last_name  = f"TestLastName{suffix}"
-    )
-    return result.unwrap()
-
-async def create_test_algorithm(name: str = "TestAlgo"):
-    repo = AlgorithmsRepository()
-    result = await repo.create(name=name, type="classification")
-    return result.unwrap()
-
-async def create_test_task(user_id: str, algorithm_id: int):
-    repo = TasksRepository()
-    dto = TaskCreateFormDTO(algorithm_id=algorithm_id, response_time=1.23)
-    result = await repo.create(user_id=user_id, algorithm_id=algorithm_id, response_time=dto.response_time)
-    return result.unwrap()
+from tests.conftest import create_test_algorithm, create_test_task, create_test_user, mock_current_user
 
 @pytest.mark.asyncio
 async def test_create_result():
