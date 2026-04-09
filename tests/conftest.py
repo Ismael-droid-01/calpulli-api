@@ -86,7 +86,7 @@ async def create_test_user(suffix: str = ""):
 
 async def create_test_algorithm(name: str = "TestAlgo"):
     repo = AlgorithmsRepository()
-    result = await repo.create(name=name, type="classification")
+    result = await repo.create(name=name, type="CLUSTERING")
     return result.unwrap()
 
 async def create_test_task(user_id: str, algorithm_id: int):

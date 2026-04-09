@@ -8,19 +8,19 @@ from ppml.dtos import AlgorithmCreateFormDTO, NumericParameterCreateFormDTO, Str
 @pytest.mark.asyncio
 async def test_create_algorithm_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="DecisionTree", type="classification").model_dump()
+        payload = AlgorithmCreateFormDTO(name="DecisionTree", type="CLUSTERING").model_dump()
         response = await client.post("/algorithms", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "DecisionTree"
-        assert data["type"] == "classification"
+        assert data["type"] == "CLUSTERING"
         assert "algorithm_id" in data
 
 
 @pytest.mark.asyncio
 async def test_create_algorithm_duplicate_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="DuplicateAlgo", type="regression").model_dump()
+        payload = AlgorithmCreateFormDTO(name="DuplicateAlgo", type="ML").model_dump()
         first = await client.post("/algorithms", json=payload)
         assert first.status_code == 200
         second = await client.post("/algorithms", json=payload)
@@ -30,7 +30,7 @@ async def test_create_algorithm_duplicate_endpoint():
 @pytest.mark.asyncio
 async def test_get_all_algorithms_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="NaiveBayes", type="classification").model_dump()
+        payload = AlgorithmCreateFormDTO(name="NaiveBayes", type="CLUSTERING").model_dump()
         await client.post("/algorithms", json=payload)
         response = await client.get("/algorithms/list")
         assert response.status_code == 200
@@ -45,7 +45,7 @@ async def test_get_all_algorithms_endpoint():
 @pytest.mark.asyncio
 async def test_get_algorithm_by_id_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="RandomForest", type="classification").model_dump()
+        payload = AlgorithmCreateFormDTO(name="RandomForest", type="CLUSTERING").model_dump()
         create_response = await client.post("/algorithms", json=payload)
         assert create_response.status_code == 200
         algorithm_id = create_response.json()["algorithm_id"]
@@ -66,13 +66,13 @@ async def test_get_algorithm_by_id_not_found_endpoint():
 @pytest.mark.asyncio
 async def test_get_algorithms_by_type_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="GradientBoosting", type="regression").model_dump()
+        payload = AlgorithmCreateFormDTO(name="GradientBoosting", type="ML").model_dump()
         await client.post("/algorithms", json=payload)
-        response = await client.get("/algorithms/type/regression")
+        response = await client.get("/algorithms/type/ML")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        assert all(alg["type"] == "regression" for alg in data)
+        assert all(alg["type"] == "ML" for alg in data)
 
 
 @pytest.mark.asyncio
@@ -85,22 +85,22 @@ async def test_get_algorithms_by_type_not_found_endpoint():
 @pytest.mark.asyncio
 async def test_update_algorithm_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="OldName", type="regression").model_dump()
+        payload = AlgorithmCreateFormDTO(name="OldName", type="ML").model_dump()
         create_response = await client.post("/algorithms", json=payload)
         assert create_response.status_code == 200
         algorithm_id = create_response.json()["algorithm_id"]
-        updated_payload = AlgorithmCreateFormDTO(name="NewName", type="classification").model_dump()
+        updated_payload = AlgorithmCreateFormDTO(name="NewName", type="CLUSTERING").model_dump()
         response = await client.put(f"/algorithms/{algorithm_id}", json=updated_payload)
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "NewName"
-        assert data["type"] == "classification"
+        assert data["type"] == "CLUSTERING"
 
 
 @pytest.mark.asyncio
 async def test_update_algorithm_not_found_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="Ghost", type="regression").model_dump()
+        payload = AlgorithmCreateFormDTO(name="Ghost", type="ML").model_dump()
         response = await client.put("/algorithms/999999", json=payload)
         assert response.status_code == 404
 
@@ -108,7 +108,7 @@ async def test_update_algorithm_not_found_endpoint():
 @pytest.mark.asyncio
 async def test_delete_algorithm_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="ToDelete", type="classification").model_dump()
+        payload = AlgorithmCreateFormDTO(name="ToDelete", type="CLUSTERING").model_dump()
         create_response = await client.post("/algorithms", json=payload)
         assert create_response.status_code == 200
         algorithm_id = create_response.json()["algorithm_id"]
@@ -129,7 +129,7 @@ async def test_delete_algorithm_not_found_endpoint():
 @pytest.mark.asyncio
 async def test_get_algorithm_parameters_endpoint():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        algorithm_payload = AlgorithmCreateFormDTO(name="SVMAlgo", type="classification").model_dump()
+        algorithm_payload = AlgorithmCreateFormDTO(name="SVMAlgo", type="CLUSTERING").model_dump()
         create_response = await client.post("/algorithms", json=algorithm_payload)
         assert create_response.status_code == 200
         algorithm_id = create_response.json()["algorithm_id"]
