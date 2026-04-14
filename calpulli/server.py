@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import ppml.config as Cfg
-from ppml.controllers import ppml_router,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router
+import calpulli.config as Cfg
+from calpulli.controllers import ppml_router,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router
 from tortoise.contrib.fastapi import register_tortoise
 from contextlib import asynccontextmanager
 
@@ -23,7 +23,7 @@ app = FastAPI(
 register_tortoise(
     app,
     db_url=Cfg.DB_URL,
-    modules={"models": ["ppml.models"]},
+    modules={"models": ["calpulli.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
 )

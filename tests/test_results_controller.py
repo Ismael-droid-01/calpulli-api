@@ -1,10 +1,10 @@
 from httpx import ASGITransport, AsyncClient
 import pytest
-from ppml.dtos import ResultCreateFormDTO
-from ppml.repositories import ResultsRepository
-from ppml.services import ResultsService
-from ppml.server import app
-import ppml.middleware as MX
+from calpulli.dtos import ResultCreateFormDTO
+from calpulli.repositories import ResultsRepository
+from calpulli.services import ResultsService
+from calpulli.server import app
+import calpulli.middleware as MX
 from tests.conftest import create_test_algorithm, create_test_task, create_test_user, mock_current_user
 
 @pytest.mark.asyncio
