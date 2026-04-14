@@ -136,6 +136,8 @@ class AlgorithmsRepository:
                 "numeric_parameters": numeric_parameters,
                 "string_parameters" : string_parameters
             })
+        except ValueError:
+            raise
         except Exception as e:
             return Err(e)
 

@@ -137,7 +137,7 @@ async def test_get_algorithm_parameters_endpoint():
         numeric_payload = NumericParameterCreateFormDTO(
             algorithm_id  = algorithm_id,
             name          = "C",
-            type          = "float",
+            type          = "FLOAT",
             default_value = 1.0,
             max_value     = 10.0
         ).model_dump()

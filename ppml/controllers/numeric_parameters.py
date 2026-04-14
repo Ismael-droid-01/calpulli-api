@@ -10,6 +10,9 @@ async def create_numeric_parameter(dto: DTO.NumericParameterCreateFormDTO, servi
     if result.is_ok:
         return result.unwrap()
     else:
+        err = result.unwrap_err()
+        if isinstance(err, ValueError):
+            raise HTTPException(status_code=422, detail=str(err))
         raise HTTPException(status_code=500, detail=str(result.unwrap_err()))
 
 @router.get("/{parameter_id}", response_model=DTO.NumericParameterDTO)
