@@ -6,16 +6,16 @@ on:
   pull_request:
     branches: ["*"]
     paths:
-      - "ppml/**"
+      - "calpulli/**"
       - "tests/**"
       - "pyproject.toml"
 jobs:  
   build:  
     runs-on: ubuntu-latest  
     env:
-      PPML_LOG_PATH: ${{ github.workspace }}/log
-      PPML_ENV_FILE_PATH: .env.dev
-      PPML_PROFILE: prod
+      CALPULLI_LOG_PATH: ${{ github.workspace }}/log
+      CALPULLI_ENV_FILE_PATH: .env.dev
+      CALPULLI_PROFILE: prod
     strategy:  
       matrix:  
         python-version: ["3.10"]  
@@ -58,20 +58,20 @@ jobs:
         run: poetry lock && poetry install --without docs --no-interaction
 
       - name: Prepare log folder
-        run: mkdir -p "${PPML_LOG_PATH}"
+        run: mkdir -p "${CALPULLI_LOG_PATH}"
 
-      - name: Start PPML Service
+      - name: Start CALPULLI Service
         run: |
-          chmod +x deploy.sh && ./deploy.sh ${PPML_PROFILE} ${{ env.PPML_ENV_FILE_PATH || '.env.dev' }}
+          chmod +x deploy.sh && ./deploy.sh ${CALPULLI_PROFILE} ${{ env.CALPULLI_ENV_FILE_PATH || '.env.dev' }}
         env:
-          PPML_ENV_FILE_PATH: ${{  env.PPML_ENV_FILE_PATH || '.env.dev' }}
-          PPML_PROFILE: ${{ env.PPML_PROFILE || 'prod' }}
-      - name: List PPML Services
+          CALPULLI_ENV_FILE_PATH: ${{  env.CALPULLI_ENV_FILE_PATH || '.env.dev' }}
+          CALPULLI_PROFILE: ${{ env.CALPULLI_PROFILE || 'prod' }}
+      - name: List CALPULLI Services
         run: |
           docker ps -a
       - name: Wait for MySQL to be ready
         run: |
-          until docker exec $(docker ps -qf "name=ppml-db") mysqladmin ping -h "localhost" --silent; do
+          until docker exec $(docker ps -qf "name=calpulli-db") mysqladmin ping -h "localhost" --silent; do
             echo "Waiting for database..."
             sleep 2
           done
@@ -88,7 +88,7 @@ jobs:
         run: |  
           poetry run coverage run -m pytest tests/ -v -s
         env:
-          PPML_ENV_FILE_PATH: '.env.test'
+          CALPULLI_ENV_FILE_PATH: '.env.test'
      
       - name: Generate Coverage Report  
         run: |  

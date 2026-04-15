@@ -1,14 +1,12 @@
-import asyncio
 import pytest
 from httpx import AsyncClient, ASGITransport
-from tortoise import Tortoise
-from ppml.server import app
-from ppml.dtos import AlgorithmCreateFormDTO, StringParameterCreateFormDTO
+from calpulli.server import app
+from calpulli.dtos import AlgorithmCreateFormDTO, StringParameterCreateFormDTO
 
 @pytest.fixture(scope="function")
 async def algorithm_id():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload = AlgorithmCreateFormDTO(name="TestAlgoForStringParams", type="classification").model_dump()
+        payload = AlgorithmCreateFormDTO(name="TestAlgoForStringParams", type="SUPERVISED").model_dump()
         response = await client.post("/algorithms", json=payload)
         assert response.status_code == 200
         return response.json()["algorithm_id"]

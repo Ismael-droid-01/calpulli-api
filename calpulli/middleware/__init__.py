@@ -1,16 +1,16 @@
-import ppml.services as S
+import calpulli.services as S
 from xolo.client import XoloClient
 from typing import Annotated, Optional
 from fastapi import Depends,Header,HTTPException
-from ppml.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository,StringParametersRepository
+from calpulli.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository,StringParametersRepository
 from fastapi.security import OAuth2PasswordBearer
-import ppml.config as Cfg
-import ppml.dtos as DTO
-from ppml.log import Log
+import calpulli.config as Cfg
+import calpulli.dtos as DTO
+from calpulli.log import Log
 
 L = Log(
     name = __name__,
-    path = Cfg.LOG_PATH,
+    path = Cfg.CALPULLI_LOG_PATH,
 )
 
 

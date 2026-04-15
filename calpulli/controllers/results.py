@@ -1,7 +1,7 @@
 from fastapi import APIRouter as Router,Depends,HTTPException
-import ppml.middleware as MX
-import ppml.services as S
-import ppml.dtos as DTO
+import calpulli.middleware as MX
+import calpulli.services as S
+import calpulli.dtos as DTO
 router = Router(prefix="/results")
 
 @router.post("")

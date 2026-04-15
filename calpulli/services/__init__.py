@@ -1,15 +1,17 @@
 
-from ppml.models import UserProfile
+from calpulli.models import UserProfile
 from option import Err,Ok,Result
-import ppml.dtos as DTO
+import calpulli.dtos as DTO
 from xolo.client import XoloClient
-from ppml.log import Log
-from ppml.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
+from calpulli.log import Log
+from calpulli.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
+import calpulli.config as Cfg
 import os
+
 
 L = Log(
     name=__name__,
-    path=os.environ.get("PPML_LOG_PATH","./logs/"),
+    path=os.environ.get("CALPULLI_LOG_PATH","./logs/"),
 )
 
 class UserProfilesService:
@@ -38,7 +40,7 @@ class UserProfilesService:
                 password   = dto.password,
                 first_name = dto.first_name,
                 last_name  = dto.last_name,
-                scope      = "ppml",
+                scope      = "calpulli",
                 expiration = "1y",
             )
             if result.is_err:
@@ -74,7 +76,7 @@ class UserProfilesService:
             result = self.xolo.auth(
                 username    = dto.username,
                 password    = dto.password,
-                scope       = "ppml",
+                scope       = "calpulli",
                 expiration  = "1h",
                 renew_token = True
             )

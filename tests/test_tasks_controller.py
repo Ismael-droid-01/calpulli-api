@@ -1,10 +1,10 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
-from ppml.services import TasksService
-from ppml.repositories import TasksRepository, UsersProfilesRepository, AlgorithmsRepository
-from ppml.dtos import TaskCreateFormDTO, UserProfileDTO
-from ppml.server import app
-import ppml.middleware as MX
+from calpulli.services import TasksService
+from calpulli.repositories import TasksRepository
+from calpulli.dtos import TaskCreateFormDTO
+from calpulli.server import app
+import calpulli.middleware as MX
 from tests.conftest import create_test_algorithm, create_test_user, mock_current_user
 
 @pytest.mark.asyncio

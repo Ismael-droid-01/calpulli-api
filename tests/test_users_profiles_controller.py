@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
-from ppml.server import app
-import ppml.dtos as DTO
+from calpulli.server import app
+import calpulli.dtos as DTO
 from uuid import uuid4
 
 @pytest.mark.asyncio

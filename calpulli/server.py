@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import ppml.config as Cfg
-from ppml.controllers import ppml_router,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router
+import calpulli.config as Cfg
+from calpulli.controllers import calpulli_routers,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router
 from tortoise.contrib.fastapi import register_tortoise
 from contextlib import asynccontextmanager
 
@@ -16,27 +16,27 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title   = Cfg.APP_TITLE,
-    version = Cfg.APP_VERSION,
+    title   = Cfg.CALPULLI_APP_TITLE,
+    version = Cfg.CALPULLI_APP_VERSION,
     lifespan=lifespan
 )
 register_tortoise(
     app,
-    db_url=Cfg.DB_URL,
-    modules={"models": ["ppml.models"]},
+    db_url=Cfg.CALPULLI_DB_URL,
+    modules={"models": ["calpulli.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = Cfg.APP_ORIGINS,
-    allow_credentials = Cfg.APP_CREDENTIALS,
-    allow_methods     = Cfg.APP_METHODS,
-    allow_headers     = Cfg.APP_HEADERS,
+    allow_origins     = Cfg.CALPULLI_APP_ORIGINS,
+    allow_credentials = Cfg.CALPULLI_APP_CREDENTIALS,
+    allow_methods     = Cfg.CALPULLI_APP_METHODS,
+    allow_headers     = Cfg.CALPULLI_APP_HEADERS,
 )
 
-app.include_router(ppml_router,tags=["ppml"])
+app.include_router(calpulli_routers,tags=["calpulli"])
 app.include_router(users_profile_router,tags=["users_profile"])
 app.include_router(algorithms_router,tags=["algorithms"])
 app.include_router(numeric_parameters_router,tags=["numeric_parameters"])
