@@ -3,9 +3,7 @@ from fastapi import status
 
 
 
-router = Router(prefix="/ppml")
+router = Router(prefix="/calpulli")
 @router.post("/run")
 async def run():
     pass
-    # res = await ppml_service.service1(request)
-    # return res
