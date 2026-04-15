@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from ppml.models import AlgorithmType
+from calpulli.models import AlgorithmType
 
 class UserCreateFormDTO(BaseModel):
     username: str = Field(..., description="The desired username for the new user")
