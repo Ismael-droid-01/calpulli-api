@@ -29,7 +29,7 @@ COPY pyproject.toml poetry.lock* README.md /app/
 
 
 # Copy the rest of the project files
-COPY ppml /app/ppml
+COPY calpulli /app/calpulli
 
 # Install Python dependencies using Poetry
 RUN poetry config virtualenvs.create false

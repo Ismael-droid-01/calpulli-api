@@ -1,8 +1,8 @@
 from fastapi import APIRouter as Router,Depends,HTTPException
-import ppml.middleware as MX
-import ppml.services as S
-from ppml.errors import PPMLError
-import ppml.dtos as DTO
+import calpulli.middleware as MX
+import calpulli.services as S
+from calpulli.errors import PPMLError
+import calpulli.dtos as DTO
 router = Router(prefix="/users")
 
 

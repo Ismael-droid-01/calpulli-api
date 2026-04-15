@@ -1,10 +1,10 @@
 
-from ppml.models import UserProfile
+from calpulli.models import UserProfile
 from option import Err,Ok,Result
-import ppml.dtos as DTO
+import calpulli.dtos as DTO
 from xolo.client import XoloClient
-from ppml.log import Log
-from ppml.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
+from calpulli.log import Log
+from calpulli.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
 import os
 
 L = Log(

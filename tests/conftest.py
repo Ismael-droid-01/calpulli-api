@@ -6,11 +6,11 @@ import pymysql
 import pytest
 from tortoise import Tortoise
 from tortoise.contrib.test import tortoise_test_context
-from ppml.models import Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
-from ppml.dtos import UserProfileDTO, TaskCreateFormDTO
-from ppml.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
+from calpulli.models import Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
+from calpulli.dtos import UserProfileDTO, TaskCreateFormDTO
+from calpulli.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
 
-DATABASE_NAME = "ppml_database"
+DATABASE_NAME = "calpulli_database"
 USER= "samuel_user"
 PASSWORD = "samuel_password"
 TEST_DB_URL = f"mysql://{USER}:{PASSWORD}@localhost:3306/{DATABASE_NAME}" 
@@ -38,7 +38,7 @@ async def initialize_tests():
         connection.close()
     async with tortoise_test_context(
         db_url=TEST_DB_URL, 
-        modules=['ppml.models'],
+        modules=['calpulli.models'],
 
     ) as ctx:
         await Tortoise.generate_schemas()

@@ -2,8 +2,8 @@ import asyncio
 import pytest
 from httpx import AsyncClient, ASGITransport
 from tortoise import Tortoise
-from ppml.server import app
-from ppml.dtos import AlgorithmCreateFormDTO, NumericParameterCreateFormDTO, StringParameterCreateFormDTO
+from calpulli.server import app
+from calpulli.dtos import AlgorithmCreateFormDTO, NumericParameterCreateFormDTO, StringParameterCreateFormDTO
 
 @pytest.mark.asyncio
 async def test_create_algorithm_endpoint():

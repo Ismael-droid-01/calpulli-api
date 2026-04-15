@@ -1,10 +1,10 @@
 services:
-  ppml-db:
+  calpulli-db:
     profiles: [prod,dev]
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_DATABASE: ppml_database
+      MYSQL_DATABASE: calpulli_database
       MYSQL_USER: samuel_user
       MYSQL_PASSWORD: samuel_password
       MYSQL_ROOT_PASSWORD: root_password
@@ -13,7 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - ppml-net
+      - calpulli-net
   xolo-db:
     profiles: [prod,dev]
     image: mongo:8-noble
@@ -23,7 +23,7 @@ services:
       - xolo-db:/data/db
       # - ./db/mongod.conf:/etc/mongo/mongod.conf:ro
     networks:
-      - ppml-net
+      - calpulli-net
     restart: unless-stopped
     command: ["mongod", "--bind_ip_all"]
 
@@ -36,7 +36,7 @@ services:
     volumes:
       - xolo-cache-data:/data
     networks:
-      - ppml-net
+      - calpulli-net
     restart: unless-stopped
 
   xolo:
@@ -51,27 +51,27 @@ services:
       # - /log:/log
       - xolo-data:/xolo
     networks:
-      - ppml-net
+      - calpulli-net
     restart: unless-stopped
     depends_on:
       - xolo-db
     command: uvicorn xoloapi.server:app --host ${XOLO_HOST-0.0.0.0} --port ${XOLO_PORT-10000} --log-level debug
 
-  ppml:
+  calpulli:
     profiles: [prod]
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${PPML_IMAGE_NAME:-ppml:api-0.0.1a0}
+    image: ${CALPULLI_IMAGE_NAME:-calpulli:api-0.0.1a0}
     env_file:
       - .env.dev
     ports:
-      - ${PPML_PORT:-6000}:${PPML_PORT:-6000}
+      - ${CALPULLI_PORT:-6000}:${CALPULLI_PORT:-6000}
     networks:
-      - ppml-net
-    command: uvicorn ppml.server:app --host ${PPML_HOST:-0.0.0.0} --port ${PPML_PORT:-6000}
+      - calpulli-net
+    command: uvicorn calpulli.server:app --host ${CALPULLI_HOST:-0.0.0.0} --port ${CALPULLI_PORT:-6000}
     depends_on:
-      - ppml-db
+      - calpulli-db
       - xolo
 volumes:
   mysql_data:
@@ -79,4 +79,4 @@ volumes:
   xolo-cache-data:
   xolo-data:
 networks:
- ppml-net:
+ calpulli-net:

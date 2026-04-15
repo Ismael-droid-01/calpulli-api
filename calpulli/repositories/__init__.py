@@ -1,5 +1,5 @@
 
-from ppml.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
+from calpulli.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
 from option import Err,Ok,Result
 
 class UsersProfilesRepository:

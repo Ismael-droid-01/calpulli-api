@@ -2,8 +2,8 @@ import asyncio
 import pytest
 from httpx import AsyncClient, ASGITransport
 from tortoise import Tortoise
-from ppml.server import app
-from ppml.dtos import AlgorithmCreateFormDTO, StringParameterCreateFormDTO
+from calpulli.server import app
+from calpulli.dtos import AlgorithmCreateFormDTO, StringParameterCreateFormDTO
 
 @pytest.fixture(scope="function")
 async def algorithm_id():
