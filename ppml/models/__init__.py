@@ -1,3 +1,4 @@
+from enum import Enum
 from tortoise.models import Model
 from tortoise import fields
 
@@ -15,10 +16,14 @@ class UserProfile(Model):
     class Meta:
         table = "user_profiles"
 
+class AlgorithmType(str, Enum):
+    SUPERVISED  = "SUPERVISED"
+    UNSUPERVISED = "UNSUPERVISED"
+
 class Algorithm(Model):
     algorithm_id    = fields.IntField(primary_key=True)
     name            = fields.CharField(max_length=255, unique=True)
-    type            = fields.CharField(max_length=255)
+    type            = fields.CharEnumField(AlgorithmType, max_length=50)
     created_at      = fields.DatetimeField(auto_now_add=True)
     updated_at      = fields.DatetimeField(auto_now=True)
 
