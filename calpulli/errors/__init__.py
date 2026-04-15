@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from fastapi import HTTPException
 
-class PPMLError(Exception):
+class CalpulliError(Exception):
     """
     Base exception class for the API.
 
@@ -16,15 +16,15 @@ class PPMLError(Exception):
         self.metadata = metadata
     
     @staticmethod
-    def from_exception(exc: Exception) -> 'PPMLError':
+    def from_exception(exc: Exception) -> 'CalpulliError':
         """
-        Converts any exception into a PPMLError with status code 500.
+        Converts any exception into a CalpulliError with status code 500.
         """
-        return PPMLError(status_code=500, detail=str(exc))
+        return CalpulliError(status_code=500, detail=str(exc))
 
     def to_http_exception(self) -> HTTPException:
         """
-        Converts a PPMLError into a FastAPI HTTP exception.
+        Converts a CalpulliError into a FastAPI HTTP exception.
         """
         return HTTPException(
             status_code=self.status_code, 
