@@ -30,6 +30,11 @@ class Algorithm(Model):
     class Meta:
         table = "algorithms"
 
+class NumericParameterType(str, Enum):
+    INTEGER = "INTEGER"
+    FLOAT = "FLOAT"
+    BOOLEAN = "BOOLEAN" 
+
 class NumericParameter(Model):
     parameter_id    = fields.IntField(primary_key=True)
     algorithm    = fields.ForeignKeyField(
@@ -39,7 +44,7 @@ class NumericParameter(Model):
         on_delete       =   fields.CASCADE
     )
     name            = fields.CharField(max_length=255)
-    type            = fields.CharField(max_length=255)
+    type            = fields.CharEnumField(NumericParameterType, max_length=50)
     default_value   = fields.FloatField()
     max_value       = fields.FloatField()
     created_at      = fields.DatetimeField(auto_now_add=True)
@@ -47,6 +52,23 @@ class NumericParameter(Model):
 
     class Meta:
         table = "numeric_parameters"
+
+    async def save(self, *args, **kwargs):
+        self._validate_by_type()
+        await super().save(*args, **kwargs)
+    
+    def _validate_by_type(self):
+        if self.type == NumericParameterType.INTEGER:
+            if not self.default_value.is_integer():
+                raise ValueError("Default value must be an integer for INTEGER type.")
+            if not self.max_value.is_integer():
+                raise ValueError("Max value must be an integer for INTEGER type.")
+        elif self.type == NumericParameterType.BOOLEAN:
+            if self.default_value not in (0.0, 1.0):
+                raise ValueError("Default value must be 0.0 or 1.0 for BOOLEAN type.")
+            if self.max_value not in (0.0, 1.0):
+                raise ValueError("Max value must be 0.0 or 1.0 for BOOLEAN type.")
+
 
 class StringParameter(Model):
     parameter_id    = fields.IntField(primary_key=True)
