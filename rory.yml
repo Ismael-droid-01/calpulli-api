@@ -1,0 +1,57 @@
+services:
+  
+  rory-client-0:
+    image: ${RORY_CLIENT_IMAGE:-nachocode/rory:client}
+    container_name: rory-client-0
+    hostname: rory-client-0
+    ports:
+      - 3000:3000
+    env_file:
+      - ./.client.env
+    volumes:
+      - /rory/rory-client-0/source:/rory/source
+      - /rory/rory-client-0/sink:/rory/sink
+      - /rory/rory-client-0/log:/rory/log
+      - /rory/mictlanx:/rory/mictlanx
+      - /rory/keys:/rory/keys
+    networks:
+      - mictlanx
+
+  rory-manager-0:
+    image: ${RORY_MANAGER_IMAGE:-nachocode/rory:manager}
+    container_name: rory-manager-0
+    hostname: rory-manager-0
+    ports:
+      - 6000:6000
+    env_file:
+      - ./.manager.env
+    volumes:
+      - /rory/rory-manager-0/source:/rory/source
+      - /rory/rory-manager-0/sink:/rory/sink
+      - /rory/rory-manager-0/log:/rory/log
+    networks:
+      - mictlanx
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.index==2"
+
+  rory-worker-0:
+      image: ${RORY_WORKER_IMAGE:-nachocode/rory:worker}
+      restart: unless-stopped
+      env_file:
+        - ./.worker.env
+      ports:
+        - "${RORY_WORKER_PORT:-9000}:${RORY_WORKER_PORT:-9000}"
+      volumes:
+        - /rory/rory-worker-0/source:/rory/source
+        - /rory/rory-worker-0/sink:/rory/sink
+        - /rory/rory-worker-0/log:/rory/log  
+        - /rory/rory-worker-0/mictlanx:/rory/mictlanx
+        - /rory/keys:/rory/keys
+      networks:
+        - mictlanx
+
+networks:
+  mictlanx:
+    external: true
