@@ -1,6 +1,18 @@
 
+from tortoise.transactions import atomic
+
+from calpulli.aggregates import TaskAggregate
+from calpulli.dtos import TaskCreateAggregateDTO
 from calpulli.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
 from option import Err,Ok,Result
+from calpulli.log import Log
+import calpulli.config as Cfg
+from typing import Union
+from roryclient.models import KmeansResponse, KnnResponse, NncResponse
+L= Log(
+    name = __name__,
+    path = Cfg.CALPULLI_LOG_PATH,
+)   
 
 class UsersProfilesRepository:
 
@@ -271,9 +283,9 @@ class StringParametersRepository:
 
 class TasksRepository:
 
-    async def create(self, user_id: str, algorithm_id: int, response_time: float) -> Result[Task, Exception]:
+    async def create(self, user_id: int, algorithm_id: int, response_time: float) -> Result[Task, Exception]:
         try:
-            user = await UserProfile.get_or_none(user_id=user_id)
+            user = await UserProfile.get_or_none(id=user_id)
             if not user:
                 raise Exception(f"User with id {user_id} not found.")
             
@@ -290,6 +302,121 @@ class TasksRepository:
         except Exception as e:
             print(f"Error creating task: {e}")
             return Err(e)
+    
+    async def complete_task(self, task_id: int, result: Union[KmeansResponse, KnnResponse, NncResponse]) -> Result[bool, Exception]:
+        try:
+            task = await Task.get_or_none(task_id=task_id)
+            if not task:
+                return Err(Exception(f"Task with id {task_id} not found."))
+            
+            task.response_time = result.response_time_clustering
+            # task.status = "COMPLETED" # this must be a enum, im just modeling as fast as possible we can change this later
+            # 
+            await task.save()
+            return Ok(True)
+        except Exception as e:
+            print(f"Error completing task: {e}")
+            return Err(e)
+    @atomic()
+    async def create_task_aggregate(self, dto: TaskCreateAggregateDTO) -> Task:
+        """
+        Crea la tarea y sus parámetros en una sola transacción segura.
+        Si algo falla, ninguna tabla se modifica.
+        """
+        # 1. Crear la entidad Padre (Aggregate Root)
+        task = await Task.create(
+            algorithm_id  = dto.algorithm_id,
+            user_id       = dto.user_id, 
+            response_time = 0.0,
+            # status="PENDING" # #44 https://github.com/Ismael-droid-01/calpulli-api/issues/44
+        )
+
+        # 2. Preparar e insertar valores numéricos (si existen)
+        # Implementar logica cuando se resuelva #41 https://github.com/Ismael-droid-01/calpulli-api/issues/41
+        
+        # if dto.numeric_values:
+        #     num_instances = [
+        #         NumericParameterValue(
+        #             task_id=task.task_id,
+        #             parameter_id=val.parameter_id,
+        #             value=val.value
+        #         ) for val in dto.numeric_values
+        #     ]
+        #     # bulk_create es mucho más rápido que .save() en un loop
+        #     await NumericParameterValue.bulk_create(num_instances)
+
+        # # 3. Preparar e insertar valores de texto (si existen)
+        # if dto.string_values:
+        #     str_instances = [
+        #         StringParameterValue(
+        #             task_id=task.task_id,
+        #             parameter_id=val.parameter_id,
+        #             value=val.value
+        #         ) for val in dto.string_values
+        #     ]
+        #     await StringParameterValue.bulk_create(str_instances)
+
+        # Retornamos la tarea padre recién creada
+        return task
+    async def update_status(self, task_id: int, status: str, detail: str = None) -> Result[bool, Exception]:
+        try:
+            task = await Task.get_or_none(task_id=task_id)
+            if not task:
+                return Err(Exception(f"Task with id {task_id} not found."))
+            
+            # task.status = status # It must be a enum, im just modeling as fast as possible we can change this later
+            if detail:
+                task.detail = detail
+            await task.save()
+            return Ok(True)
+        except Exception as e:
+            print(f"Error updating task status: {e}")
+            return Err(e)
+    async def get_task_aggregate(self,task_id:int)->Result[TaskAggregate, Exception]:
+        try:
+            task = await Task.get_or_none(task_id=task_id)
+            # print(f"Fetched task for aggregate: {task}")
+            if not task:
+                L.error(f"Task with id {task_id} not found.")
+                return Err(Exception(f"Task with id {task_id} not found."))
+
+            L.debug({
+                "msg": "Fetched task for aggregate",
+                "task_id": task_id,
+                "algorithm_id": task.algorithm_id,
+                "user_id": task.user_id
+            })
+
+            algorithm = await Algorithm.get_or_none(algorithm_id=task.algorithm_id)
+            if not algorithm:
+                L.error(f"Algorithm with id {task.algorithm} not found.")
+                return Err(Exception(f"Algorithm with id {task.algorithm} not found."))
+            L.debug({
+                "msg": "Fetched algorithm for aggregate",
+                "algorithm_id": algorithm.algorithm_id,
+                "algorithm_name": algorithm.name,
+                "algorithm_type": algorithm.type
+            })
+
+            numeric_parameters = [
+                # Default numeric parameters cause they dont exists yet (see more on #41 https://github.com/Ismael-droid-01/calpulli-api/issues/41 )
+            ]
+            string_parameters  = [
+                # Default string parameters cause they dont exists yet (see more on #41 https://github.com/Ismael-droid-01/calpulli-api/issues/41 )
+            ]
+            L.warning("Using default parameters for aggregate since parameter tables are not implemented yet.")
+            
+            task_agg = TaskAggregate(
+                task_id         = task.task_id,
+                algorithm_name  = algorithm.name,
+                algorithm_id    = algorithm.algorithm_id,
+                status          = "PENDING" # this must be a enum, im just modeling as fast as possible we can change this later, also this is just a default value, the real status must be obtained from the DB, but for now we can set it as PENDING
+            )
+
+
+            return Ok(task_agg)
+        except Exception as e:
+            return Err(e)
 
     async def get_by_id(self, task_id: int) -> Result[Task, Exception]:
         try:
@@ -301,9 +428,9 @@ class TasksRepository:
         except Exception as e:
             return Err(e)
 
-    async def get_by_user_id(self, user_id: str) -> Result[list[Task], Exception]:
+    async def get_by_user_id(self, user_id: int) -> Result[list[Task], Exception]:
         try:
-            user = await UserProfile.get_or_none(user_id=user_id)
+            user = await UserProfile.get_or_none(id=user_id)
             if not user:
                 return Err(Exception(f"User with id {user_id} not found."))
             

@@ -1,13 +1,13 @@
 
+from typing import Union
 from calpulli.models import UserProfile
 from option import Err,Ok,Result
 import calpulli.dtos as DTO
 from xolo.client import XoloClient
 from calpulli.log import Log
 from calpulli.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
-import calpulli.config as Cfg
 import os
-
+from roryclient.models import KmeansResponse, KnnResponse, NncResponse
 
 L = Log(
     name=__name__,
@@ -85,13 +85,13 @@ class UserProfilesService:
                 return Err(result.unwrap_err())
             xolo_response = result.unwrap()
             return Ok(DTO.UserLoggedInResponseDTO(
-                access_token = xolo_response.access_token,
-                email=xolo_response.email,
-                username=xolo_response.username,
-                first_name=xolo_response.first_name,
-                last_name=xolo_response.last_name,
-                temporal_secret=xolo_response.temporal_secret,
-                user_id=xolo_response.user_id,
+                access_token    = xolo_response.access_token,
+                email           = xolo_response.email,
+                username        = xolo_response.username,
+                first_name      = xolo_response.first_name,
+                last_name       = xolo_response.last_name,
+                temporal_secret = xolo_response.temporal_secret,
+                user_id         = xolo_response.user_id,
             ))
         except Exception as e:
             L.error(f"Exception occurred while logging in: {e}")
@@ -252,6 +252,9 @@ class AlgorithmsService:
         except Exception as e:
             L.error(f"Exception occurred while getting algorithm parameters: {e}")
             return Err(e)
+    
+
+
 
 class NumericParametersService:
     
@@ -465,78 +468,6 @@ class StringParametersService:
             L.error(f"Exception occurred while deleting string parameter by id: {e}")
             return Err(e)
 
-class TasksService:
-
-    def __init__(self, repository: TasksRepository):
-        self.repository = repository
-
-    async def create_task(
-        self, 
-        user_id: str,           
-        dto: DTO.TaskCreateFormDTO
-    ) -> Result[DTO.TaskCreatedResponseDTO, Exception]:
-        try:
-            result = await self.repository.create(
-                user_id       = user_id,
-                algorithm_id  = dto.algorithm_id,
-                response_time = dto.response_time
-            )
-            if result.is_err:
-                L.error(f"Error creating task: {result.unwrap_err()}")
-                return Err(result.unwrap_err())
-            task = result.unwrap()
-            return Ok(DTO.TaskCreatedResponseDTO(
-                task_id       = task.task_id,
-                user_id       = user_id,
-                algorithm_id  = dto.algorithm_id,
-                response_time = task.response_time,
-                created_at    = task.created_at.isoformat(),
-            ))
-        except Exception as e:
-            L.error(f"Exception occurred while creating task: {e}")
-            return Err(e)
-
-    async def get_tasks_by_user(
-        self, 
-        user_id: str
-    ) -> Result[list[DTO.TaskDTO], Exception]:
-        try:
-            result = await self.repository.get_by_user_id(user_id=user_id)
-            if result.is_err:
-                L.error(f"Error getting tasks by user: {result.unwrap_err()}")
-                return Err(result.unwrap_err())
-            tasks = result.unwrap()
-            return Ok([
-                DTO.TaskDTO(
-                    task_id       = task.task_id,
-                    user_id       = user_id,
-                    algorithm_id  = task.algorithm_id,
-                    response_time = task.response_time,
-                    created_at    = task.created_at.isoformat(),
-                    updated_at    = task.updated_at.isoformat(),
-                ) for task in tasks
-            ])
-        except Exception as e:
-            L.error(f"Exception occurred while getting tasks by user: {e}")
-            return Err(e)
-    
-    async def get_task_by_id(self, task_id: int) -> Result[DTO.TaskDTO, Exception]:
-        try:
-            result = await self.repository.get_by_id(task_id=task_id)
-            if result.is_err:
-                return Err(result.unwrap_err())
-            task = result.unwrap()
-            return Ok(DTO.TaskDTO(
-                task_id       = task.task_id,
-                user_id       = task.user_id,
-                algorithm_id  = task.algorithm_id,
-                response_time = task.response_time,
-                created_at    = task.created_at.isoformat(),
-                updated_at    = task.updated_at.isoformat(),
-            ))
-        except Exception as e:
-            L.error(f"Exception occurred while getting task by id: {e}")
-            return Err(e)
 
 class ResultsService:
 
@@ -584,3 +515,158 @@ class ResultsService:
         except Exception as e:
             L.error(f"Exception occurred while getting results by task id: {e}")
             return Err(e)
+class TasksService:
+
+    def __init__(self, repository: TasksRepository,result_service: ResultsService):
+        self.repository = repository
+        self.result_service = result_service
+    async def complete_task(self, task_id: int, result_data: Union[KmeansResponse, KnnResponse, NncResponse]) -> Result[bool, Exception]:
+        try:
+            # result = await self.repository.complete_task(task_id=task_id, result_data=result_data)
+            result = await self.repository.complete_task(task_id=task_id, result=result_data)
+
+            if result.is_err:
+                L.error(f"Error completing task: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            dto = DTO.ResultCreateFormDTO(format="json", url="fake_url",task_id=task_id)
+            result_result = await self.result_service.create_result(task_id=task_id, dto=dto)
+            if result_result.is_err:
+                L.error(f"Error creating result after completing task: {result_result.unwrap_err()}")
+                return Err(result_result.unwrap_err())
+            
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while completing task: {e}")
+            return Err(e)
+    async def create_task_aggregate(self, dto: DTO.TaskCreateAggregateDTO) -> Result[DTO.TaskCreatedResponseDTO, Exception]:
+        try:
+            # Delegamos la responsabilidad transaccional al repositorio
+            task = await self.repository.create_task_aggregate(dto)
+            
+            # Si todo salió bien, mapeamos la respuesta
+            response_time = 0.0
+            return Ok(DTO.TaskCreatedResponseDTO(
+                task_id       = task.task_id,
+                algorithm_id  = dto.algorithm_id,
+                response_time = response_time,
+                user_id       = dto.user_id,
+                # status  = task.status,
+
+            ))
+            
+        except Exception as e:
+            # Si Tortoise lanza una excepción (ej. constraint_violation), 
+            # el @atomic() ya hizo el rollback automático antes de llegar a este punto.
+            L.error(f"Transaction failed while creating Task Aggregate: {e}")
+            return Err(e)
+        
+    async def update_status(self, task_id: int, status: str, detail: str = None) -> Result[bool, Exception]:
+        try:
+            result = await self.repository.update_status(task_id=task_id, status=status, detail=detail)
+            if result.is_err:
+                L.error(f"Error updating task status: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while updating task status: {e}")
+            return Err(e)
+    async def get_task_for_execution(self, task_id: int) -> Result[DTO.TaskWithParametersDTO, Exception]:
+        try:
+            task_result = await self.repository.get_task_aggregate(task_id)
+            
+            if task_result.is_err:
+                L.error(f"Task with ID {task_id} not found.")
+                return Err(Exception(f"Task with ID {task_id} not found."))
+            task = task_result.unwrap()
+
+            # Mapeamos los valores iterando sobre las relaciones precargadas
+            return Ok(DTO.TaskWithParametersDTO(
+                task_id        = task.task_id,
+                algorithm_name = task.algorithm_name,
+                status         = task.status,
+                numeric_parameters=[
+                    DTO.NumericValueDTO(
+                        name  = val.name, 
+                        value = val.value           
+                    ) for val in task.numeric_parameters
+                ],
+                string_parameters=[
+                    DTO.StringValueDTO(
+                        name  = val.name,
+                        value = val.value
+                    ) for val in task.string_parameters
+                ]
+            ))
+        except Exception as e:
+            L.error(f"Error fetching task aggregate: {e}")
+            return Err(e)
+    async def create_task(
+        self, 
+        user_id: int,           
+        dto: DTO.TaskCreateFormDTO,
+        # rory_client: RoryClient
+    ) -> Result[DTO.TaskCreatedResponseDTO, Exception]:
+        try:
+            result = await self.repository.create(
+                user_id       = user_id,
+                algorithm_id  = dto.algorithm_id,
+                response_time = dto.response_time
+            )
+
+            if result.is_err:
+                L.error(f"Error creating task: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            task = result.unwrap()
+            return Ok(DTO.TaskCreatedResponseDTO(
+                task_id       = task.task_id,
+                user_id       = user_id,
+                algorithm_id  = dto.algorithm_id,
+                response_time = task.response_time,
+                created_at    = task.created_at.isoformat(),
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while creating task: {e}")
+            return Err(e)
+
+    async def get_tasks_by_user(
+        self, 
+        user_id: int 
+    ) -> Result[list[DTO.TaskDTO], Exception]:
+        try:
+            result = await self.repository.get_by_user_id(user_id=user_id)
+            if result.is_err:
+                L.error(f"Error getting tasks by user: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            tasks = result.unwrap()
+            return Ok([
+                DTO.TaskDTO(
+                    task_id       = task.task_id,
+                    user_id       = user_id,
+                    algorithm_id  = task.algorithm_id,
+                    response_time = task.response_time,
+                    created_at    = task.created_at.isoformat(),
+                    updated_at    = task.updated_at.isoformat(),
+                ) for task in tasks
+            ])
+        except Exception as e:
+            L.error(f"Exception occurred while getting tasks by user: {e}")
+            return Err(e)
+    
+    async def get_task_by_id(self, task_id: int) -> Result[DTO.TaskDTO, Exception]:
+        try:
+            result = await self.repository.get_by_id(task_id=task_id)
+            if result.is_err:
+                return Err(result.unwrap_err())
+            task = result.unwrap()
+            return Ok(DTO.TaskDTO(
+                task_id       = task.task_id,
+                user_id       = task.user_id,
+                algorithm_id  = task.algorithm_id,
+                response_time = task.response_time,
+                created_at    = task.created_at.isoformat(),
+                updated_at    = task.updated_at.isoformat(),
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while getting task by id: {e}")
+            return Err(e)
+

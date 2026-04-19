@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-
+from typing import  Optional,List
 from calpulli.models import AlgorithmType
 
 class UserCreateFormDTO(BaseModel):
@@ -28,6 +28,7 @@ class UserLoggedInResponseDTO(BaseModel):
     temporal_secret: str = Field(..., description="A temporary secret for additional security measures during the session")
 
 class UserProfileDTO(BaseModel):
+    user_profile_id:int = Field(..., description="The unique identifier of the user profile")
     user_id: str = Field(..., description="The unique identifier of the user")
     username: str = Field(..., description="The username of the user")
     email: str = Field(..., description="The email address of the user")
@@ -108,13 +109,13 @@ class TaskCreateFormDTO(BaseModel):
 
 class TaskCreatedResponseDTO(BaseModel):
     task_id: int = Field(..., description="The unique identifier of the created task")
-    user_id: str = Field(..., description="The unique identifier of the user who created the task")
+    user_id: int = Field(..., description="The unique identifier of the user who created the task")
     algorithm_id: int = Field(..., description="The unique identifier of the algorithm to be executed")
     response_time: float = Field(..., description="The expected response time for the task execution in seconds")
 
 class TaskDTO(BaseModel):
     task_id: int = Field(..., description="The unique identifier of the task")
-    user_id: str = Field(..., description="The unique identifier of the user who created the task")
+    user_id: int = Field(..., description="The unique identifier of the user who created the task")
     algorithm_id: int = Field(..., description="The unique identifier of the algorithm to be executed")
     response_time: float = Field(..., description="The expected response time for the task execution in seconds")
     created_at: str = Field(..., description="The ISO8601 timestamp when the task was created")
@@ -138,3 +139,36 @@ class ResultDTO(BaseModel):
     url: str = Field(..., description="The URL where the result can be accessed")
     created_at: str = Field(..., description="The ISO8601 timestamp when the result was created")
     updated_at: str = Field(..., description="The ISO8601 timestamp when the result was last updated")
+
+
+class NumericValueDTO(BaseModel):
+    name: str
+    value: float
+
+class StringValueDTO(BaseModel):
+    name: str
+    value: str
+
+class TaskWithParametersDTO(BaseModel):
+    task_id: int
+    algorithm__id: Optional[str] = Field(None, description="The unique identifier of the associated algorithm, if available")
+    
+    algorithm_name: Optional[str] = Field(None, description="The name of the algorithm associated with the task, if available")
+    status: str 
+    numeric_parameters: list[NumericValueDTO] = []
+    string_parameters: list[StringValueDTO] = []
+
+
+class NumericValueCreateDTO(BaseModel):
+    parameter_id: int
+    value: float
+
+class StringValueCreateDTO(BaseModel):
+    parameter_id: int
+    value: str
+
+class TaskCreateAggregateDTO(BaseModel):
+    algorithm_id: int
+    user_id: Optional[int] = Field(None, description="The unique identifier of the user creating the task, if available")
+    numeric_values: List[NumericValueCreateDTO] = []
+    string_values: List[StringValueCreateDTO] = []
