@@ -89,6 +89,24 @@ class NumericParameterValue(Model):
 
     class Meta:
         table = "numeric_parameter_values"
+    
+    async def save(self, *args, **kwargs):
+        await self._validate_value()
+        await super().save(*args, **kwargs)
+        
+    async def _validate_value(self):
+        parameter = await NumericParameter.get(parameter_id=self.parameter_id)
+
+        if self.value > parameter.max_value:
+            raise ValueError(
+                f"Value {self.value} exceeds max_value {parameter.max_value}."
+            )
+        if parameter.type == NumericParameterType.INTEGER:
+            if not float(self.value).is_integer():
+                raise ValueError("Value must be an integer for INTEGER type.")
+        elif parameter.type == NumericParameterType.BOOLEAN:
+            if self.value not in (0.0, 1.0):
+                raise ValueError("Value must be 0.0 or 1.0 for BOOLEAN type.")
 
 class StringParameter(Model):
     parameter_id    = fields.IntField(primary_key=True)
