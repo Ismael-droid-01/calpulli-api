@@ -5,11 +5,21 @@ from calpulli.controllers import calpulli_routers,users_profile_router, algorith
 from tortoise.contrib.fastapi import register_tortoise
 from contextlib import asynccontextmanager
 
+from calpulli.core.worker.consumer import TaskConsumer
+
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up...")
+    task_consumer = TaskConsumer(n_workers=Cfg.CALPULLI_WORKERS_COUNT, max_queue_size=Cfg.CALPULLI_WORKER_QUEUE_SIZE)
+    app.state.task_consumer = task_consumer
+
+    await app.state.task_consumer.start()
     yield
     print("Shutting down...")
+    await app.state.task_consumer.stop()
 
 
 

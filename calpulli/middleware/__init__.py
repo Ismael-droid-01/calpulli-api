@@ -1,12 +1,14 @@
 import calpulli.services as S
 from xolo.client import XoloClient
 from typing import Annotated, Optional
-from fastapi import Depends,Header,HTTPException
+from fastapi import Depends,Header,HTTPException,Request
 from calpulli.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository,StringParametersRepository
 from fastapi.security import OAuth2PasswordBearer
 import calpulli.config as Cfg
 import calpulli.dtos as DTO
 from calpulli.log import Log
+from roryclient.client import RoryClient
+from calpulli.core.worker.consumer import TaskConsumer
 
 L = Log(
     name = __name__,
@@ -14,6 +16,12 @@ L = Log(
 )
 
 
+def get_rory_client()->RoryClient:
+    return RoryClient(
+        hostname = Cfg.RORY_HOSTNAME,
+        port     = Cfg.RORY_PORT,
+        timeout  = Cfg.RORY_TIMEOUT
+    )
 
 def get_xolo_client()->XoloClient:
     return XoloClient(
@@ -64,6 +72,7 @@ async def __get_current_user(
         create_at = user_profile.created_at.isoformat() if user_profile.created_at else None
         updated_at = user_profile.updated_at.isoformat() if user_profile.updated_at else None
         user_profile_dto = DTO.UserProfileDTO(
+            user_profile_id = user_profile.id,
             user_id    = user_profile.user_id,
             username   = user_profile.username,
             email      = user_profile.email,
@@ -99,8 +108,18 @@ def get_numeric_parameters_service() -> S.NumericParametersService:
 def get_string_parameters_service() -> S.StringParametersService:
     return S.StringParametersService(repository=StringParametersRepository())
 
-def get_tasks_service() -> S.TasksService:
-    return S.TasksService(repository=S.TasksRepository())
-
 def get_results_service() -> S.ResultsService:  
     return S.ResultsService(repository=S.ResultsRepository())
+
+def get_tasks_service(
+        result_service: S.ResultsService = Depends(get_results_service)
+) -> S.TasksService:
+    return S.TasksService(
+        repository=S.TasksRepository(),
+        result_service=result_service
+    )
+
+
+
+def get_task_consumer(request:Request) -> TaskConsumer:
+    return request.app.state.task_consumer

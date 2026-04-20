@@ -97,7 +97,7 @@ class Task(Model):
     user            = fields.ForeignKeyField(
         "models.UserProfile", 
         related_name    =   "tasks",
-        to_field        =   "user_id",
+        # to_field        =   "id",
         on_delete       =   fields.RESTRICT
     )
     response_time    = fields.FloatField() 
