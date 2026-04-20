@@ -97,16 +97,25 @@ class NumericParameterValue(Model):
     async def _validate_value(self):
         parameter = await NumericParameter.get(parameter_id=self.parameter_id)
 
-        if self.value > parameter.max_value:
-            raise ValueError(
-                f"Value {self.value} exceeds max_value {parameter.max_value}."
-            )
-        if parameter.type == NumericParameterType.INTEGER:
-            if not float(self.value).is_integer():
-                raise ValueError("Value must be an integer for INTEGER type.")
-        elif parameter.type == NumericParameterType.BOOLEAN:
+        if parameter.type == NumericParameterType.BOOLEAN:
             if self.value not in (0.0, 1.0):
-                raise ValueError("Value must be 0.0 or 1.0 for BOOLEAN type.")
+                raise ValueError(
+                    f"Value must be 0.0 or 1.0 for BOOLEAN type, got {self.value}."
+                )
+        elif parameter.type == NumericParameterType.INTEGER:
+            if not float(self.value).is_integer():
+                raise ValueError(
+                    f"Value must be an integer for INTEGER type, got {self.value}."
+                )
+            if self.value > parameter.max_value:
+                raise ValueError(
+                    f"Value {self.value} exceeds max_value {parameter.max_value}."
+                )
+        else: 
+            if self.value > parameter.max_value:
+                raise ValueError(
+                    f"Value {self.value} exceeds max_value {parameter.max_value}."
+                )
 
 class StringParameter(Model):
     parameter_id    = fields.IntField(primary_key=True)

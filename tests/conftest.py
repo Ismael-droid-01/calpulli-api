@@ -10,7 +10,7 @@ from httpx import ASGITransport, AsyncClient
 
 from tortoise import Tortoise
 from tortoise.contrib.test import tortoise_test_context
-from calpulli.models import Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
+from calpulli.models import StringParameterValue, NumericParameterValue, Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
 from calpulli.dtos import UserProfileDTO, TaskCreateFormDTO
 from calpulli.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
 from calpulli.server import app
@@ -104,6 +104,8 @@ async def clean_database():
     # await _clean()
 
 async def _clean():
+    await NumericParameterValue.all().delete()
+    await StringParameterValue.all().delete()
     await Result.all().delete()
     await Task.all().delete()         
     await NumericParameter.all().delete()
