@@ -3,7 +3,7 @@ from tortoise.transactions import atomic
 
 from calpulli.aggregates import TaskAggregate
 from calpulli.dtos import TaskCreateAggregateDTO
-from calpulli.models import UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
+from calpulli.models import Dataset, UserProfile, Algorithm, NumericParameter, StringParameter, Task, Result as ResultModel
 from option import Err,Ok,Result
 from calpulli.log import Log
 import calpulli.config as Cfg
@@ -465,5 +465,45 @@ class ResultsRepository:
             
             results = await ResultModel.filter(task_id=task_id).all()
             return Ok(results)
+        except Exception as e:
+            return Err(e)
+
+class DatasetsRepository:
+    
+    async def create(self, user_id: str, name: str, extension: str) -> Result[Dataset, Exception]:
+        try:
+            user = await UserProfile.get_or_none(id=user_id)
+            if not user:
+                raise Exception(f"User with id {user_id} not found.")
+            
+            dataset = await Dataset.create(
+                user_id    = user,
+                name       = name,
+                extension  = extension
+            )
+            return Ok(dataset)
+        except Exception as e:
+            print(f"Error creating dataset: {e}")
+            return Err(e)
+    
+    async def get_by_user_id(self, user_id: str) -> Result[list[Dataset], Exception]:
+        try:
+            user = await UserProfile.get_or_none(id=user_id)
+            if not user:
+                return Err(Exception(f"User with id {user_id} not found."))
+            
+            datasets = await Dataset.filter(user_id=user_id).all()
+            return Ok(datasets)
+        except Exception as e:
+            return Err(e)
+
+    async def delete(self, dataset_id: int) -> Result[None, Exception]:
+        try:
+            dataset = await Dataset.get_or_none(id=dataset_id)
+            if dataset:
+                await dataset.delete()
+                return Ok(True)
+            else:
+                return Err(Exception(f"Dataset with id {dataset_id} not found."))
         except Exception as e:
             return Err(e)

@@ -5,7 +5,7 @@ from option import Err,Ok,Result
 import calpulli.dtos as DTO
 from xolo.client import XoloClient
 from calpulli.log import Log
-from calpulli.repositories import ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
+from calpulli.repositories import DatasetsRepository, ResultsRepository, TasksRepository, UsersProfilesRepository, AlgorithmsRepository, NumericParametersRepository, StringParametersRepository
 import os
 from roryclient.models import KmeansResponse, KnnResponse, NncResponse
 
@@ -670,3 +670,55 @@ class TasksService:
             L.error(f"Exception occurred while getting task by id: {e}")
             return Err(e)
 
+class DatasetsService: 
+    def __init__(self, repository: DatasetsRepository):
+        self.repository = repository
+    
+    async def register(self, user_id: str, name: str, extension: str) -> Result[DTO.DatasetCreatedResponseDTO, Exception]:
+        try:
+            result = await self.repository.create(user_id=user_id, name=name, extension=extension)
+            if result.is_err:
+                L.error(f"Error registering dataset: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            dataset = result.unwrap()
+            return Ok(DTO.DatasetCreatedResponseDTO(
+                dataset_id = dataset.dataset_id,
+                user_id    = dataset.user_id,
+                name       = dataset.name,
+                extension  = dataset.extension
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while registering dataset: {e}")
+            return Err(e)
+    
+    async def get_by_user_id(self, user_id: str) -> Result[list[DTO.DatasetDTO], Exception]:
+        try:
+            result = await self.repository.get_by_user_id(user_id=user_id)
+            if result.is_err:
+                L.error(f"Error getting datasets by user id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            datasets = result.unwrap()
+            return Ok([
+                DTO.DatasetDTO(
+                    dataset_id = dataset.dataset_id,
+                    user_id    = dataset.user_id,
+                    name       = dataset.name,
+                    extension  = dataset.extension,
+                    created_at = dataset.created_at.isoformat(),
+                    updated_at = dataset.updated_at.isoformat(),
+                ) for dataset in datasets
+            ])
+        except Exception as e:
+            L.error(f"Exception occurred while getting datasets by user id: {e}")
+            return Err(e)
+    
+    async def delete(self, dataset_id: int) -> Result[bool, Exception]:
+        try:
+            result = await self.repository.delete_by_id(dataset_id=dataset_id)
+            if result.is_err:
+                L.error(f"Error deleting dataset: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while deleting dataset: {e}")
+            return Err(e)

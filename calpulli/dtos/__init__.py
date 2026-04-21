@@ -172,3 +172,17 @@ class TaskCreateAggregateDTO(BaseModel):
     user_id: Optional[int] = Field(None, description="The unique identifier of the user creating the task, if available")
     numeric_values: List[NumericValueCreateDTO] = []
     string_values: List[StringValueCreateDTO] = []
+
+class DatasetCreatedResponseDTO(BaseModel):
+    dataset_id: int = Field(..., description="The unique identifier of the created dataset")
+    user_id: int = Field(..., description="The unique identifier of the user who owns the dataset")
+    name: str = Field(..., description="The name of the created dataset")
+    extension: str = Field(..., description="The file extension of the dataset (e.g., 'csv', 'json')")
+
+class DatasetDTO(BaseModel):
+    dataset_id: int = Field(..., description="The unique identifier of the dataset")
+    user_id: int = Field(..., description="The unique identifier of the user who owns the dataset")
+    name: str = Field(..., description="The name of the dataset")
+    extension: str = Field(..., description="The file extension of the dataset (e.g., 'csv', 'json')")
+    created_at: str = Field(..., description="The ISO8601 timestamp when the dataset was created")
+    updated_at: str = Field(..., description="The ISO8601 timestamp when the dataset was last updated")
