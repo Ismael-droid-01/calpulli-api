@@ -712,9 +712,9 @@ class DatasetsService:
             L.error(f"Exception occurred while getting datasets by user id: {e}")
             return Err(e)
     
-    async def delete(self, dataset_id: int) -> Result[bool, Exception]:
+    async def delete(self, user_id: str, dataset_id: int) -> Result[bool, Exception]:
         try:
-            result = await self.repository.delete_by_id(dataset_id=dataset_id)
+            result = await self.repository.delete(user_id=user_id, dataset_id=dataset_id)
             if result.is_err:
                 L.error(f"Error deleting dataset: {result.unwrap_err()}")
                 return Err(result.unwrap_err())

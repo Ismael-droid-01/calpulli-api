@@ -5,3 +5,4 @@ from calpulli.controllers.numeric_parameters import router as numeric_parameters
 from calpulli.controllers.string_parameters import router as string_parameters_router
 from calpulli.controllers.tasks import router as tasks_router
 from calpulli.controllers.results import router as results_router
+from calpulli.controllers.datasets import router as datasets_router

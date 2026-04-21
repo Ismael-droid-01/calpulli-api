@@ -10,7 +10,7 @@ from httpx import ASGITransport, AsyncClient
 
 from tortoise import Tortoise
 from tortoise.contrib.test import tortoise_test_context
-from calpulli.models import Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
+from calpulli.models import Dataset, Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
 from calpulli.dtos import UserProfileDTO, TaskCreateFormDTO
 from calpulli.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
 from calpulli.server import app
@@ -108,7 +108,8 @@ async def _clean():
     await Task.all().delete()         
     await NumericParameter.all().delete()
     await StringParameter.all().delete()
-    await Algorithm.all().delete()    
+    await Algorithm.all().delete()
+    await Dataset.all().delete()    
     await UserProfile.all().delete()
 
 def mock_current_user(user_id: str, username: str):

@@ -472,12 +472,12 @@ class DatasetsRepository:
     
     async def create(self, user_id: str, name: str, extension: str) -> Result[Dataset, Exception]:
         try:
-            user = await UserProfile.get_or_none(id=user_id)
+            user = await UserProfile.get_or_none(user_id=user_id)
             if not user:
                 raise Exception(f"User with id {user_id} not found.")
             
             dataset = await Dataset.create(
-                user_id    = user,
+                user       = user,
                 name       = name,
                 extension  = extension
             )
@@ -488,22 +488,26 @@ class DatasetsRepository:
     
     async def get_by_user_id(self, user_id: str) -> Result[list[Dataset], Exception]:
         try:
-            user = await UserProfile.get_or_none(id=user_id)
+            user = await UserProfile.get_or_none(user_id=user_id)
             if not user:
                 return Err(Exception(f"User with id {user_id} not found."))
             
-            datasets = await Dataset.filter(user_id=user_id).all()
+            datasets = await Dataset.filter(user=user).all()
             return Ok(datasets)
         except Exception as e:
             return Err(e)
 
-    async def delete(self, dataset_id: int) -> Result[None, Exception]:
+    async def delete(self, user_id: str, dataset_id: int) -> Result[None, Exception]:
         try:
-            dataset = await Dataset.get_or_none(id=dataset_id)
+            user = await UserProfile.get_or_none(user_id=user_id)
+            if not user:
+                return Err(Exception(f"User with id {user_id} not found."))
+            
+            dataset = await Dataset.get_or_none(dataset_id=dataset_id, user=user)
             if dataset:
                 await dataset.delete()
                 return Ok(True)
             else:
-                return Err(Exception(f"Dataset with id {dataset_id} not found."))
+                return Err(Exception(f"Dataset with id {dataset_id} not found for user {user_id}."))
         except Exception as e:
             return Err(e)

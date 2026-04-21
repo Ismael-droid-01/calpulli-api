@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import calpulli.config as Cfg
-from calpulli.controllers import calpulli_routers,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router
+from calpulli.controllers import calpulli_routers,users_profile_router, algorithms_router, numeric_parameters_router, string_parameters_router, tasks_router, results_router, datasets_router
 from tortoise.contrib.fastapi import register_tortoise
 from contextlib import asynccontextmanager
 
@@ -53,3 +53,4 @@ app.include_router(numeric_parameters_router,tags=["numeric_parameters"])
 app.include_router(string_parameters_router, tags=["string_parameters"])
 app.include_router(tasks_router, tags=["tasks"])
 app.include_router(results_router, tags=["results"])
+app.include_router(datasets_router, tags=["datasets"])
