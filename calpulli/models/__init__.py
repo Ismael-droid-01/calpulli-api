@@ -100,6 +100,13 @@ class Task(Model):
         # to_field        =   "id",
         on_delete       =   fields.RESTRICT
     )
+    dataset        = fields.ForeignKeyField(
+        "models.Dataset",
+        related_name    =   "tasks",
+        to_field        =   "dataset_id",
+        on_delete       =   fields.RESTRICT,
+        null           =   True
+    )
     response_time    = fields.FloatField() 
     created_at      = fields.DatetimeField(auto_now_add=True)
     updated_at      = fields.DatetimeField(auto_now=True)
