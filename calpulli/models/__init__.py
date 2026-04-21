@@ -69,6 +69,55 @@ class NumericParameter(Model):
             if self.max_value not in (0.0, 1.0):
                 raise ValueError("Max value must be 0.0 or 1.0 for BOOLEAN type.")
 
+class NumericParameterValue(Model):
+    parameter_value_id    = fields.IntField(primary_key=True)
+    parameter   = fields.ForeignKeyField(
+        "models.NumericParameter", 
+        related_name    =   "numeric_parameter_values",
+        to_field        =   "parameter_id",
+        on_delete       =   fields.CASCADE
+    )
+    task       = fields.ForeignKeyField(
+        "models.Task",
+        related_name    =   "numeric_parameter_values",
+        to_field        =   "task_id",
+        on_delete       =   fields.CASCADE
+    )
+    value       = fields.FloatField()
+    created_at  = fields.DatetimeField(auto_now_add=True)
+    updated_at  = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "numeric_parameter_values"
+    
+    async def save(self, *args, **kwargs):
+        await self._validate_value()
+        await super().save(*args, **kwargs)
+        
+    async def _validate_value(self):
+        parameter:NumericParameter = self.parameter
+        if not parameter:
+            raise ValueError("Associated parameter not found.")
+
+        if parameter.type == NumericParameterType.BOOLEAN:
+            if self.value not in (0.0, 1.0):
+                raise ValueError(
+                    f"Value must be 0.0 or 1.0 for BOOLEAN type, got {self.value}."
+                )
+        elif parameter.type == NumericParameterType.INTEGER:
+            if not float(self.value).is_integer():
+                raise ValueError(
+                    f"Value must be an integer for INTEGER type, got {self.value}."
+                )
+            if self.value > parameter.max_value:
+                raise ValueError(
+                    f"Value {self.value} exceeds max_value {parameter.max_value}."
+                )
+        else: 
+            if self.value > parameter.max_value:
+                raise ValueError(
+                    f"Value {self.value} exceeds max_value {parameter.max_value}."
+                )
 
 class StringParameter(Model):
     parameter_id    = fields.IntField(primary_key=True)
@@ -85,6 +134,27 @@ class StringParameter(Model):
 
     class Meta:
         table = "string_parameters"
+
+class StringParameterValue(Model):
+    parameter_value_id    = fields.IntField(primary_key=True)
+    parameter   = fields.ForeignKeyField(
+        "models.StringParameter", 
+        related_name    =   "string_parameter_values",
+        to_field        =   "parameter_id",
+        on_delete       =   fields.CASCADE
+    )
+    task       = fields.ForeignKeyField(
+        "models.Task",
+        related_name    =   "string_parameter_values",
+        to_field        =   "task_id",
+        on_delete       =   fields.CASCADE
+    )
+    value       = fields.CharField(max_length=255)
+    created_at  = fields.DatetimeField(auto_now_add=True)
+    updated_at  = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "string_parameter_values"
 
 class Task(Model):
     task_id         = fields.IntField(primary_key=True)

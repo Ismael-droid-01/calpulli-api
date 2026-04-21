@@ -2,16 +2,14 @@
 import asyncio
 import os
 from typing import List, Tuple,AsyncGenerator
-from wsgiref import headers
 from dotenv import load_dotenv
 import pymysql
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tortoise import Tortoise
-from tortoise.contrib.test import tortoise_test_context
-from calpulli.models import Dataset, Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
-from calpulli.dtos import UserProfileDTO, TaskCreateFormDTO
+from calpulli.models import NumericParameterType, StringParameterValue, NumericParameterValue, Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result,Dataset
+from calpulli.dtos import UserProfileDTO
 from calpulli.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
 from calpulli.server import app
 import calpulli.dtos as DTO
@@ -74,24 +72,34 @@ async def get_user_clean_and_get_client(client_with_before_and_after_clean)-> Tu
     )
     return dto,client_with_before_and_after_clean 
 
-
+async def dummy_close_connections():
+    pass
 
 @pytest.fixture(autouse=True, scope="session")
+# @pytest.fixture(autouse=True)
 async def initialize_tests():
     # Setup: Initialize Tortoise with your models
     connection = pymysql.connect(host='localhost', user=USER, password=PASSWORD)
     try:
         with connection.cursor() as cursor:
             cursor.execute(f"DROP DATABASE IF EXISTS {DATABASE_NAME}")
+            cursor.execute(f"CREATE DATABASE {DATABASE_NAME}")
     finally:
         connection.close()
-    async with tortoise_test_context(
-        db_url=TEST_DB_URL, 
-        modules=['calpulli.models'],
+    
+    await Tortoise.init(
+        db_url=TEST_DB_URL,
+        modules={'models': ['calpulli.models']}
+    )
+    await Tortoise.generate_schemas()
 
-    ) as ctx:
-        await Tortoise.generate_schemas()
-        yield ctx
+    original_close = Tortoise.close_connections
+    # This is a workaround to prevent Tortoise from closing connections after each test, which can cause issues in an async test environment. 
+    # We will close connections manually at the end of the session.
+    Tortoise.close_connections = dummy_close_connections
+    yield
+    Tortoise.close_connections = original_close
+    await Tortoise.close_connections()
 
 @pytest.fixture()
 async def clean_database():
@@ -104,6 +112,8 @@ async def clean_database():
     # await _clean()
 
 async def _clean():
+    await NumericParameterValue.all().delete()
+    await StringParameterValue.all().delete()
     await Result.all().delete()
     await Task.all().delete()         
     await NumericParameter.all().delete()
@@ -127,7 +137,8 @@ def mock_current_user(user_id: str, username: str):
         )
     return _mock
 
-async def create_test_user(suffix: str = ""):
+# @pytest.fixture
+async def create_test_user(suffix: str = "")-> UserProfile:
     repo = UsersProfilesRepository()
     result = await repo.create(
         user_id    = f"test-user-id-{suffix}",
@@ -138,16 +149,82 @@ async def create_test_user(suffix: str = ""):
     )
     return result.unwrap()
 
-async def create_test_algorithm(name: str = "TestAlgo"):
+@pytest.fixture
+async def user():
+    idd = uuid4().hex[:8]
+    yield await create_test_user(suffix=idd)
+
+# @pytest.fixture
+async def create_test_algorithm(name: str = "TestAlgo")-> Algorithm:
     repo = AlgorithmsRepository()
     result = await repo.create(name=name, type="SUPERVISED")
     return result.unwrap()
 
-# async def create_test_task(user_id: str, algorithm_id: int):
-#     repo = TasksRepository()
-#     dto = TaskCreateFormDTO(algorithm_id=algorithm_id, response_time=1.23)
-#     result = await repo.create(user_id=user_id, algorithm_id=algorithm_id, response_time=dto.response_time)
-#     return result.unwrap()
+
+@pytest.fixture
+async def algorithm():
+    idd = uuid4().hex[:8]
+    yield await create_test_algorithm(name=f"TestAlgo{idd}")
+
+
+
+@pytest.fixture
+async def float_parameter(algorithm):
+    yield await NumericParameter.create(
+        algorithm=algorithm,
+        name="learning_rate",
+        type=NumericParameterType.FLOAT,
+        default_value=0.01,
+        max_value=1.0
+    )
+
+
+@pytest.fixture
+async def integer_parameter(algorithm):
+    yield await NumericParameter.create(
+        algorithm=algorithm,
+        name="n_estimators",
+        type=NumericParameterType.INTEGER,
+        default_value=100,
+        max_value=500
+    )
+
+
+@pytest.fixture
+async def boolean_parameter(algorithm):
+    yield await NumericParameter.create(
+        algorithm=algorithm,
+        name="use_bias",
+        type=NumericParameterType.BOOLEAN,
+        default_value=0,
+        max_value=1
+    )
+
+@pytest.fixture
+async def string_parameter(algorithm:Algorithm)-> AsyncGenerator[StringParameter, None]:
+    yield await StringParameter.create(
+        algorithm     = algorithm,
+        name          = "kernel",
+        default_value = "rbf"
+    )
+@pytest.fixture
+async def task(algorithm:Algorithm, user:UserProfile)-> AsyncGenerator[Task, None]:
+    repo      = TasksRepository()
+    result = await repo.create(
+        algorithm_id  = algorithm.algorithm_id,
+        user_id       = user.id,
+        response_time = 0.0
+    )
+    yield result.unwrap()
+
+@pytest.fixture
+async def prepare_string_parameter_and_task(string_parameter,task):
+    yield string_parameter, task
+
+    
+
+
+
 
 @pytest.fixture()
 async def prepare_with_user_algorithm_client(get_user_clean_and_get_client)-> AsyncGenerator[Tuple[DTO.UserLoggedInResponseDTO,Algorithm,AsyncClient], None]:
@@ -155,6 +232,8 @@ async def prepare_with_user_algorithm_client(get_user_clean_and_get_client)-> As
     algo_suffix  = uuid4().hex[:8]
     algorithm    = await create_test_algorithm(name=f"Algo{algo_suffix}")
     yield user, algorithm, client
+
+
 @pytest.fixture()
 async def prepare_with_user_algorithm_task_client(get_user_clean_and_get_client)-> AsyncGenerator[Tuple[DTO.UserLoggedInResponseDTO,Algorithm,List[Task],AsyncClient], None]:
     user, client = get_user_clean_and_get_client

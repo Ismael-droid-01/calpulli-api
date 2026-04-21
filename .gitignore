@@ -13,3 +13,4 @@ ppml_server/venv
 .coverage
 logs/
 curl_test.sh
+poetry.lock
