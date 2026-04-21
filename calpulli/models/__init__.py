@@ -95,7 +95,9 @@ class NumericParameterValue(Model):
         await super().save(*args, **kwargs)
         
     async def _validate_value(self):
-        parameter = await NumericParameter.get(parameter_id=self.parameter_id)
+        parameter:NumericParameter = self.parameter
+        if not parameter:
+            raise ValueError("Associated parameter not found.")
 
         if parameter.type == NumericParameterType.BOOLEAN:
             if self.value not in (0.0, 1.0):
