@@ -63,10 +63,6 @@ async def test_get_result_endpoint_not_owned(get_user_clean_and_get_client, algo
     
     assert response.status_code == 404
 
-from calpulli.models import UserProfile
-from calpulli.repositories import ResultsRepository
-from tests.conftest import create_test_task
-
 @pytest.mark.asyncio
 async def test_delete_result_endpoint_success(get_user_clean_and_get_client, algorithm):
     user_dto, client = get_user_clean_and_get_client
