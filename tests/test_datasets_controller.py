@@ -89,7 +89,6 @@ async def test_delete_dataset_endpoint(get_user_clean_and_get_client):
 
     response = await client.delete(f"/datasets/{dataset_id}", headers=headers)
     assert response.status_code == 200, response.json()
-    assert response.status_code == 200
     assert response.json()["message"] == "Dataset deleted successfully"
 
 
