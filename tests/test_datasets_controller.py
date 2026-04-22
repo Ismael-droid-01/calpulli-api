@@ -1,8 +1,6 @@
 import io
 import pytest
-from httpx import AsyncClient, ASGITransport
-from calpulli.server import app
-from calpulli.dtos import AlgorithmCreateFormDTO
+from tests.conftest import register_and_login_user
 
 @pytest.mark.asyncio
 async def test_upload_dataset_endpoint(get_user_clean_and_get_client):
@@ -14,7 +12,6 @@ async def test_upload_dataset_endpoint(get_user_clean_and_get_client):
 
     response = await client.post("/datasets", files=file, headers=headers)
     assert response.status_code == 200, response.json()
-    assert response.status_code == 200
     data = response.json()
     assert data["name"] == "customers"
     assert data["extension"] == "csv"
@@ -58,17 +55,27 @@ async def test_get_user_datasets_endpoint(get_user_clean_and_get_client):
 
 
 @pytest.mark.asyncio
-async def test_get_user_datasets_only_own(get_user_clean_and_get_client):
-    user, client = get_user_clean_and_get_client
-    headers = {"Authorization": f"Bearer {user.access_token}", "Temporal-Secret-Key": user.temporal_secret}
+async def test_get_user_datasets_only_own_isolation(get_user_clean_and_get_client):
+    user_a, client = get_user_clean_and_get_client
+    headers_a = {"Authorization": f"Bearer {user_a.access_token}", "Temporal-Secret-Key": user_a.temporal_secret}
 
-    file = {"file": ("mydata.csv", io.BytesIO(b"data"), "text/csv")}
-    await client.post("/datasets", files=file, headers=headers)
+    user_b = await register_and_login_user(client, "other")
+    headers_b = {"Authorization": f"Bearer {user_b.access_token}", "Temporal-Secret-Key": user_b.temporal_secret}
 
-    response = await client.get("/datasets", headers=headers)
+    file_b = {"file": ("private_b.csv", io.BytesIO(b"top secret"), "text/csv")}
+    await client.post("/datasets", files=file_b, headers=headers_b)
+
+    file_a = {"file": ("my_data.csv", io.BytesIO(b"hello world"), "text/csv")}
+    await client.post("/datasets", files=file_a, headers=headers_a)
+
+    response = await client.get("/datasets", headers=headers_a)
+    assert response.status_code == 200
     data = response.json()
-    assert all(d["name"] != "other_user_data" for d in data)
 
+    assert len(data) == 1
+    assert data[0]["name"] == "my_data"
+    
+    assert all(d["name"] != "private_b" for d in data)
 
 @pytest.mark.asyncio
 async def test_delete_dataset_endpoint(get_user_clean_and_get_client):
@@ -92,7 +99,7 @@ async def test_delete_dataset_not_found_endpoint(get_user_clean_and_get_client):
     headers = {"Authorization": f"Bearer {user.access_token}", "Temporal-Secret-Key": user.temporal_secret}
 
     response = await client.delete("/datasets/999999", headers=headers)
-    assert response.status_code == 500
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio

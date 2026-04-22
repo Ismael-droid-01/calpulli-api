@@ -497,7 +497,7 @@ class DatasetsRepository:
         except Exception as e:
             return Err(e)
 
-    async def delete(self, user_id: str, dataset_id: int) -> Result[None, Exception]:
+    async def delete(self, user_id: str, dataset_id: int) -> Result[bool, Exception]:
         try:
             user = await UserProfile.get_or_none(user_id=user_id)
             if not user:
