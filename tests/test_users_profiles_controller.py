@@ -5,8 +5,8 @@ import calpulli.dtos as DTO
 from uuid import uuid4
 
 @pytest.mark.asyncio
-async def test_create_user(client_with_before_and_after_clean):
-    client = client_with_before_and_after_clean
+async def test_create_user(controller_client):
+    client = controller_client
     # async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
     uid = uuid4().hex[:8]  # Generate a unique identifier for the test user
     username = f"testuser_{uid}"
@@ -31,8 +31,8 @@ async def test_create_user(client_with_before_and_after_clean):
     assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_get_current_user(client_with_before_and_after_clean):
-    client = client_with_before_and_after_clean
+async def test_get_current_user(controller_client):
+    client = controller_client
     uid = uuid4().hex[:8]  # Generate a unique identifier for the test user
     username = f"testuser_{uid}"
     password = "password123"

@@ -41,7 +41,7 @@ async def client():
             yield client
             
 @pytest.fixture()
-async def client_with_before_and_after_clean():
+async def controller_client():
     async with app.router.lifespan_context(app):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             await _clean()  # Limpiar la base de datos antes de cada test
@@ -50,7 +50,7 @@ async def client_with_before_and_after_clean():
 
 
 @pytest.fixture()
-async def get_user_clean_and_get_client(client_with_before_and_after_clean)-> Tuple[DTO.UserLoggedInResponseDTO,AsyncClient]:
+async def get_user_clean_and_get_client(controller_client)-> Tuple[DTO.UserLoggedInResponseDTO,AsyncClient]:
     x_id = uuid4().hex
     dto = DTO.UserCreateFormDTO(
         email    = f"testuser_{x_id}@test.com",
@@ -59,9 +59,9 @@ async def get_user_clean_and_get_client(client_with_before_and_after_clean)-> Tu
         first_name= f"TestFirstName_{x_id}",
         last_name = f"TestLastName_{x_id}"
     )
-    response = await client_with_before_and_after_clean.post("/users", json=dto.model_dump())
+    response = await controller_client.post("/users", json=dto.model_dump())
     assert response.status_code == 200
-    response = await client_with_before_and_after_clean.post("/users/login", json={"username": dto.username, "password": dto.password})
+    response = await controller_client.post("/users/login", json={"username": dto.username, "password": dto.password})
     data_json = response.json()
     dto = DTO.UserLoggedInResponseDTO(
         first_name      = data_json.get("first_name"),
@@ -72,7 +72,7 @@ async def get_user_clean_and_get_client(client_with_before_and_after_clean)-> Tu
         email           = data_json.get("email"),
         username        = data_json.get("username"),
     )
-    return dto,client_with_before_and_after_clean 
+    return dto,controller_client 
 
 async def dummy_close_connections():
     pass

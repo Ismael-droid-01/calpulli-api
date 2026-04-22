@@ -4,13 +4,13 @@ from calpulli.server import app
 from calpulli.dtos import AlgorithmCreateFormDTO, NumericParameterCreateFormDTO
 
 @pytest.fixture(scope="function")
-async def prepare_tests(client_with_before_and_after_clean):
+async def prepare_tests(controller_client):
     # async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         payload = AlgorithmCreateFormDTO(name="TestAlgoForParams", type="UNSUPERVISED").model_dump()
-        response = await client_with_before_and_after_clean.post("/algorithms", json=payload)
+        response = await controller_client.post("/algorithms", json=payload)
         assert response.status_code == 200
         x:int = response.json()["algorithm_id"]
-        yield x, client_with_before_and_after_clean
+        yield x, controller_client
 
 
 @pytest.mark.asyncio
