@@ -92,11 +92,18 @@ async def test_delete_result_endpoint_success(get_user_clean_and_get_client, alg
     assert response.json()["message"] == "Result deleted successfully."
 
 @pytest.mark.asyncio
-async def test_delete_result_unauthorized(get_user_clean_and_get_client, task):
+async def test_delete_result_unauthorized(get_user_clean_and_get_client, algorithm):
     user_a_dto, client = get_user_clean_and_get_client
+
+    user_a_profile = await UserProfile.get(username=user_a_dto.username)
+
+    task_a = await create_test_task(
+        user_id=user_a_profile.id,
+        algorithm_id=algorithm.algorithm_id
+    )
     
     repo = ResultsRepository()
-    res = await repo.create(task_id=task.task_id, format="json", url="http://safe.json")
+    res = await repo.create(task_id=task_a.task_id, format="json", url="http://safe.json")
     result_id = res.unwrap().result_id
 
     user_b_dto = await register_and_login_user(client, "hacker")
