@@ -6,7 +6,6 @@ from calpulli.services import ResultsService
 from calpulli.server import app
 from tests.conftest import create_test_algorithm,  create_test_user
 
-@pytest.mark.skip(reason="This is not a controller unit test, it's more of a test for the ResultsService. Consider moving it to a different test file (e.g test_results_service.py).")
 @pytest.mark.asyncio
 async def test_create_result():
     user      = await create_test_user(suffix="result-create")
@@ -26,8 +25,6 @@ async def test_create_result():
     assert created_result.url == "http://example.com/result.json"
     assert created_result.result_id is not None
 
-
-@pytest.mark.skip(reason="This is not a controller unit test, it's more of a test for the ResultsService. Consider moving it to a different test file (e.g test_results_service.py).")
 @pytest.mark.asyncio
 async def test_create_result_task_not_found():
     service = ResultsService(repository=ResultsRepository())
@@ -36,7 +33,6 @@ async def test_create_result_task_not_found():
 
     assert result.is_err
 
-@pytest.mark.skip(reason="This is not a controller unit test, it's more of a test for the ResultsService. Consider moving it to a different test file (e.g test_results_service.py).")
 @pytest.mark.asyncio
 async def test_get_results_by_task_id():
     user      = await create_test_user(suffix="result-get")
@@ -62,33 +58,9 @@ async def test_get_results_by_task_id():
         assert res.format == "json"
         assert res.url == f"http://example.com/result_{i}.json" 
 
-@pytest.mark.skip(reason="This is not a controller unit test, it's more of a test for the ResultsService. Consider moving it to a different test file (e.g test_results_service.py).")
 @pytest.mark.asyncio
 async def test_get_results_by_task_id_task_not_found():
     service = ResultsService(repository=ResultsRepository())
     result  = await service.get_results_by_task_id(task_id=9999)
     assert result.is_err
 
-
-@pytest.mark.skip(reason="This controller is not mandatory cause the results are going to be inserted by the workers, not by the users. Consider removing the endpoint and the controller if it's not strictly necessary.")
-@pytest.mark.asyncio
-async def test_create_result_endpoint():
-    user      = await create_test_user(suffix="res-endpoint")
-    algorithm = await create_test_algorithm(name="AlgoResEndpoint")
-    task = None
-    # task      = await create_test_task(user_id=user.user_id, algorithm_id=algorithm.algorithm_id)
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        payload  = ResultCreateFormDTO(
-            task_id = task.task_id,
-            format  = "json",
-            url     = "http://storage.example.com/result/1"
-        ).model_dump()
-        response = await client.post("/results", json=payload)
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["task_id"] == task.task_id
-    assert data["format"]  == "json"
-    assert data["url"]     == "http://storage.example.com/result/1"
-    assert "result_id" in data
