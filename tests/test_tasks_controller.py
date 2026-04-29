@@ -1,11 +1,6 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
-from calpulli.services import TasksService
-from calpulli.repositories import TasksRepository
 from calpulli.dtos import TaskCreateFormDTO
 from calpulli.server import app
-import calpulli.middleware as MX
-from tests.conftest import create_test_algorithm, create_test_user,  mock_current_user, prepare_with_user_algorithm_client, prepare_with_user_algorithm_task_client
 from calpulli.models import Algorithm, NumericParameter,NumericParameterType,AlgorithmType
 import calpulli.dtos as DTO
 
@@ -61,72 +56,6 @@ async def test_create_new_task_integration(get_user_clean_and_get_client):
     # D. Validaciones HTTP
     print("Response status code:", response)
     assert response.status_code == 200
-
-
-@pytest.mark.skip(reason="this test is not a controller test, it's more a task service test, we should move it to the service tests")
-@pytest.mark.asyncio
-async def test_create_task_user_not_found_service():
-    algorithm = await create_test_algorithm(name="AlgoUserNotFound")
-    
-    service = TasksService(repository=TasksRepository())
-    dto     = TaskCreateFormDTO(algorithm_id=algorithm.algorithm_id, response_time=0.5)
-    result  = await service.create_task(user_id="nonexistent-user-id", dto=dto)
-
-    assert result.is_err
-
-
-@pytest.mark.skip(reason="this test is not a controller test, it's more a task service test, we should move it to the service tests")
-@pytest.mark.asyncio
-async def test_create_task_algorithm_not_found_service():
-    user = await create_test_user(suffix="algonotfound")
-
-    service = TasksService(repository=TasksRepository())
-    dto     = TaskCreateFormDTO(algorithm_id=999999, response_time=0.5)
-    result  = await service.create_task(user_id=user.user_id, dto=dto)
-
-    assert result.is_err
-
-
-@pytest.mark.skip(reason="this test is not a controller test, it's more a task service test, we should move it to the service tests")
-@pytest.mark.asyncio
-async def test_get_tasks_by_user_service():
-    user      = await create_test_user(suffix="getbyuser")
-    algorithm = await create_test_algorithm(name="AlgoGetByUser")
-
-    service = TasksService(repository=TasksRepository())
-    dto     = TaskCreateFormDTO(algorithm_id=algorithm.algorithm_id, response_time=2.0)
-
-    await service.create_task(user_id=user.user_id, dto=dto)
-    await service.create_task(user_id=user.user_id, dto=dto)
-
-    result = await service.get_tasks_by_user(user_id=user.user_id)
-
-    assert result.is_ok
-    tasks = result.unwrap()
-    assert isinstance(tasks, list)
-    assert len(tasks) >= 2
-    assert all(t.user_id == user.user_id for t in tasks)
-
-
-@pytest.mark.skip(reason="this test is not a controller test, it's more a task service test, we should move it to the service tests")
-@pytest.mark.asyncio
-async def test_get_tasks_by_user_not_found_service():
-    service = TasksService(repository=TasksRepository())
-    result  = await service.get_tasks_by_user(user_id="nonexistent-user-id")
-    assert result.is_err
-
-
-@pytest.mark.skip(reason="this test is not a controller test, it's more a task service test, we should move it to the service tests")
-@pytest.mark.asyncio
-async def test_get_tasks_by_user_empty_service():
-    user    = await create_test_user(suffix="empty")
-    service = TasksService(repository=TasksRepository())
-    result  = await service.get_tasks_by_user(user_id=user.user_id)
-
-    if result.is_ok:
-        assert result.unwrap() == []
-    else:
-        assert result.is_err
 
 
 

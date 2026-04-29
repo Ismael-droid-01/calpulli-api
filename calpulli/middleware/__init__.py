@@ -1,8 +1,8 @@
 import calpulli.services as S
+import calpulli.repositories as R
 from xolo.client import XoloClient
 from typing import Annotated, Optional
 from fastapi import Depends,Header,HTTPException,Request
-from calpulli.repositories import AlgorithmsRepository, NumericParametersRepository, UsersProfilesRepository,StringParametersRepository
 from fastapi.security import OAuth2PasswordBearer
 import calpulli.config as Cfg
 import calpulli.dtos as DTO
@@ -31,7 +31,7 @@ def get_xolo_client()->XoloClient:
 
 
 def get_users_service(xolo_client:S.XoloClient = Depends(get_xolo_client))->S.UserProfilesService:
-    repository = UsersProfilesRepository()
+    repository = R.UsersProfilesRepository()
     return S.UserProfilesService(repository=repository, xolo=xolo_client)
 
 
@@ -100,22 +100,22 @@ async def get_current_user(
     return current_user
 
 def get_algorithms_service() -> S.AlgorithmsService:
-    return S.AlgorithmsService(repository=AlgorithmsRepository())
+    return S.AlgorithmsService(repository=R.AlgorithmsRepository())
 
 def get_numeric_parameters_service() -> S.NumericParametersService:
-    return S.NumericParametersService(repository=NumericParametersRepository())
+    return S.NumericParametersService(repository=R.NumericParametersRepository())
 
 def get_string_parameters_service() -> S.StringParametersService:
-    return S.StringParametersService(repository=StringParametersRepository())
+    return S.StringParametersService(repository=R.StringParametersRepository())
 
 def get_results_service() -> S.ResultsService:  
-    return S.ResultsService(repository=S.ResultsRepository())
+    return S.ResultsService(repository=R.ResultsRepository())
 
 def get_tasks_service(
         result_service: S.ResultsService = Depends(get_results_service)
 ) -> S.TasksService:
     return S.TasksService(
-        repository=S.TasksRepository(),
+        repository=R.TasksRepository(),
         result_service=result_service
     )
 
@@ -125,4 +125,4 @@ def get_task_consumer(request:Request) -> TaskConsumer:
     return request.app.state.task_consumer
 
 def get_datasets_service() -> S.DatasetsService:
-    return S.DatasetsService(repository=S.DatasetsRepository())
+    return S.DatasetsService(repository=R.DatasetsRepository())

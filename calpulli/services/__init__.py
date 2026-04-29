@@ -516,6 +516,37 @@ class ResultsService:
         except Exception as e:
             L.error(f"Exception occurred while getting results by task id: {e}")
             return Err(e)
+        
+    async def get_result_by_id(self, result_id: int, user_profile_id: int) -> Result[DTO.ResultDTO, Exception]:
+        try:
+            result = await self.repository.get_by_id(result_id=result_id, user_profile_id=user_profile_id)
+            if result.is_err:
+                L.error(f"Error getting result by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            res = result.unwrap()
+            return Ok(DTO.ResultDTO(
+                result_id   = res.result_id,
+                task_id     = res.task_id,
+                format      = res.format,
+                url         = res.url,
+                created_at  = res.created_at.isoformat(),
+                updated_at  = res.updated_at.isoformat(),
+            ))
+        except Exception as e:
+            L.error(f"Exception occurred while getting result by id: {e}")
+            return Err(e)
+        
+    async def delete_result_by_id(self, result_id: int, user_profile_id: int) -> Result[bool, Exception]:
+        try:
+            result = await self.repository.delete_by_id(result_id=result_id, user_profile_id=user_profile_id)
+            if result.is_err:
+                L.error(f"Error deleting result by id: {result.unwrap_err()}")
+                return Err(result.unwrap_err())
+            return Ok(result.unwrap())
+        except Exception as e:
+            L.error(f"Exception occurred while deleting result by id: {e}")
+            return Err(e)
+        
 class TasksService:
 
     def __init__(self, repository: TasksRepository,result_service: ResultsService):

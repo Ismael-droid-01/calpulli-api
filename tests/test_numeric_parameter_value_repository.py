@@ -1,5 +1,5 @@
 import pytest
-from calpulli.models import Algorithm, AlgorithmType, NumericParameter, NumericParameterType, NumericParameterValue, Task, UserProfile
+from calpulli.models import  NumericParameterValue
 
 
 # --- Tests FLOAT ---

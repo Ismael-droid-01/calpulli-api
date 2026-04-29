@@ -149,6 +149,15 @@ async def create_test_user(suffix: str = "")-> UserProfile:
     )
     return result.unwrap()
 
+async def create_test_task(user_id: str, algorithm_id: int)-> Task:
+    repo = TasksRepository()
+    result = await repo.create(
+        algorithm_id  = algorithm_id,
+        user_id       = user_id,
+        response_time = 0.0
+    )
+    return result.unwrap()
+
 @pytest.fixture
 async def user():
     idd = uuid4().hex[:8]
@@ -257,11 +266,11 @@ async def register_and_login_user(client: AsyncClient, suffix: str):
     """Función auxiliar para crear un usuario y obtener su DTO de login."""
     x_id = f"{suffix}_{uuid4().hex[:4]}"
     dto = DTO.UserCreateFormDTO(
-        email=f"user_{x_id}@test.com",
-        username=f"user_{x_id}",
-        password="testpassword",
-        first_name=f"Name_{x_id}",
-        last_name=f"Last_{x_id}"
+        email      = f"user_{x_id}@test.com",
+        username   = f"user_{x_id}",
+        password   = "testpassword",
+        first_name = f"Name_{x_id}",
+        last_name  = f"Last_{x_id}"
     )
     
     register_response = await client.post("/users", json=dto.model_dump())
@@ -272,11 +281,11 @@ async def register_and_login_user(client: AsyncClient, suffix: str):
     
     data = response.json()
     return DTO.UserLoggedInResponseDTO(
-        user_id=data.get("user_id"),
-        access_token=data.get("access_token"),
-        temporal_secret=data.get("temporal_secret"),
-        username=data.get("username"),
-        email=data.get("email"),
-        first_name=data.get("first_name"),
-        last_name=data.get("last_name")
+        user_id         = data.get("user_id"),
+        access_token    = data.get("access_token"),
+        temporal_secret = data.get("temporal_secret"),
+        username        = data.get("username"),
+        email           = data.get("email"),
+        first_name      = data.get("first_name"),
+        last_name       = data.get("last_name")
     )

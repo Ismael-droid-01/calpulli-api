@@ -9,6 +9,7 @@ from calpulli.log import Log
 import calpulli.config as Cfg
 from typing import Union
 from roryclient.models import KmeansResponse, KnnResponse, NncResponse
+
 L= Log(
     name = __name__,
     path = Cfg.CALPULLI_LOG_PATH,
@@ -467,9 +468,33 @@ class ResultsRepository:
             return Ok(results)
         except Exception as e:
             return Err(e)
-
-class DatasetsRepository:
+    async def get_by_id(self, result_id: int, user_profile_id: int) -> Result[ResultModel, Exception]:
+        try:
+            result = await ResultModel.get_or_none(
+                result_id=result_id,
+                task__user_id=user_profile_id
+            )
+            if result:
+                return Ok(result)
+            else:
+                return Err(Exception(f"Result with id {result_id} not found."))
+        except Exception as e:
+            return Err(e)
     
+    async def delete_by_id(self, result_id: int, user_profile_id: int) -> Result[bool, Exception]:
+        try:
+            result = await ResultModel.get_or_none(
+                result_id=result_id,
+                task__user_id=user_profile_id
+            )
+            if result:
+                await result.delete()
+                return Ok(True)
+            else:
+                return Err(Exception(f"Result with id {result_id} not found."))
+        except Exception as e:
+            return Err(e)
+class DatasetsRepository:
     async def create(self, user_id: str, name: str, extension: str) -> Result[Dataset, Exception]:
         try:
             user = await UserProfile.get_or_none(user_id=user_id)
@@ -511,3 +536,4 @@ class DatasetsRepository:
                 return Err(Exception(f"Dataset with id {dataset_id} not found for user {user_id}."))
         except Exception as e:
             return Err(e)
+    
