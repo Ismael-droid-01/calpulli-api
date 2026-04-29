@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest  
     env:
       CALPULLI_LOG_PATH: ${{ github.workspace }}/log
+      CALPULLI_DATASET_SINK_PATH: ${{ github.workspace }}/calpulli/datasets
       CALPULLI_ENV_FILE_PATH: .env.dev
       CALPULLI_PROFILE: prod
     strategy:  
@@ -58,7 +59,10 @@ jobs:
         run: poetry lock && poetry install --without docs --no-interaction
 
       - name: Prepare log folder
-        run: mkdir -p "${CALPULLI_LOG_PATH}"
+        run: | 
+          mkdir -p "${CALPULLI_LOG_PATH}"
+          mkdir -p "${CALPULLI_DATASET_SINK_PATH}"
+      
 
       - name: Start CALPULLI Service
         run: |
@@ -89,7 +93,6 @@ jobs:
           poetry run coverage run -m pytest tests/ -v -s
         env:
           CALPULLI_ENV_FILE_PATH: '.env.test'
-     
       - name: Generate Coverage Report  
         run: |  
           poetry run coverage report -m
