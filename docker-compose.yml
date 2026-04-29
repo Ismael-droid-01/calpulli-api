@@ -70,6 +70,8 @@ services:
     networks:
       - calpulli-net
     command: uvicorn calpulli.server:app --host ${CALPULLI_HOST:-0.0.0.0} --port ${CALPULLI_PORT:-6000}
+    volumes:
+      - calpulli-datasets:/calpulli/datasets
     depends_on:
       - calpulli-db
       - xolo
@@ -78,5 +80,6 @@ volumes:
   xolo-db:
   xolo-cache-data:
   xolo-data:
+  calpulli-datasets:
 networks:
  calpulli-net:
