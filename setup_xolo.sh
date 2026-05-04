@@ -1,17 +1,17 @@
 #!/bin/bash
 set -e
 
-XOLO_URL="http://localhost:10000/api/v4"
+XOLO_URL="http://localhost:10000"
 ENV_FILE=".env.dev"
 # Use a default if the secret isn't passed for local testing
 ADMIN_TOKEN="${X_ADMIN_TOKEN:-admin_token_here}"
 
 echo "Waiting for Xolo API to be ready..."
-timeout 30s sh -c "until curl -s $XOLO_URL/health; do sleep 1; done" || (echo "Xolo timed out" && exit 1)
+timeout 30s sh -c "until curl -s $XOLO_URL/docs; do sleep 1; done" || (echo "Xolo timed out" && exit 1)
 
 echo "Creating Account..."
 # Matches CreateAccountDTO(account_id: str, name: str)
-curl -s -X POST "$XOLO_URL/accounts" \
+curl -s -X POST "$XOLO_URL/api/v4/accounts" \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: $ADMIN_TOKEN" \
   -d '{"account_id": "calpulli_ci", "name": "CI Test Account"}'
@@ -19,7 +19,7 @@ curl -s -X POST "$XOLO_URL/accounts" \
 echo "Generating API Key..."
 # Matches CreateAPIKeyDTO(name: str, scopes: list[APIKeyScope])
 # Note: Adjust "all" to your specific Enum value
-RESPONSE=$(curl -s -X POST "$XOLO_URL/accounts/calpulli_ci/apikeys" \
+RESPONSE=$(curl -s -X POST "$XOLO_URL/api/v4/accounts/calpulli_ci/apikeys" \
   -H "Content-Type: application/json" \
   -H "X-Admin-Token: $ADMIN_TOKEN" \
   -d '{"name": "ci_key", "scopes": ["all"]}')
