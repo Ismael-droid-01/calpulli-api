@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-XOLO_URL="http://localhost:10000"
+XOLO_URL="http://localhost:10000/api/v4"
 ENV_FILE=".env.dev"
 # Use a default if the secret isn't passed for local testing
 ADMIN_TOKEN="${X_ADMIN_TOKEN:-admin_token_here}"
