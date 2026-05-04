@@ -23,7 +23,7 @@ httpx = "^0.28.1"
 aiomysql = "^0.3.2"
 roryclient = {version = "0.1.13", allow-prereleases = true, source = "test"}
 python-multipart = "^0.0.26"
-xolo = {version = "0.1.0a0", source = "test"}
+xolo = {version = "0.1.0a0",allow-prereleases = true, source = "test"}
 
 
 [build-system]
