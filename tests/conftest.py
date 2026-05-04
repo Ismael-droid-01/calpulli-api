@@ -2,16 +2,14 @@
 import asyncio
 import os
 from typing import List, Tuple,AsyncGenerator
-from wsgiref import headers
 from dotenv import load_dotenv
 import pymysql
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tortoise import Tortoise
-from tortoise.contrib.test import tortoise_test_context
 from calpulli.models import NumericParameterType, StringParameterValue, NumericParameterValue, Task, UserProfile, Algorithm, NumericParameter, StringParameter,Result
-from calpulli.dtos import UserProfileDTO, TaskCreateFormDTO
+from calpulli.dtos import UserProfileDTO
 from calpulli.repositories import UsersProfilesRepository, AlgorithmsRepository, TasksRepository
 from calpulli.server import app
 import calpulli.dtos as DTO

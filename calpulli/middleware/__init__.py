@@ -25,8 +25,10 @@ def get_rory_client()->RoryClient:
 
 def get_xolo_client()->XoloClient:
     return XoloClient(
-        api_url= Cfg.XOLO_API_URL,
-        secret= Cfg.XOLO_SECRET_KEY
+        account_id = Cfg.XOLO_ACCOUNT_ID,
+        api_key    = Cfg.XOLO_API_KEY,
+        api_url    = Cfg.XOLO_API_URL,
+        secret     = Cfg.XOLO_SECRET_KEY
     )
 
 
