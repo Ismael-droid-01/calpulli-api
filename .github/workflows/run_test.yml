@@ -70,15 +70,15 @@ jobs:
           
       - name: Provision Xolo Account
         run: |
+          echo "::group::Xolo Provisioning Logs"
           chmod +x ./setup_xolo.sh
           ./setup_xolo.sh
+          echo "::endgroup::"
+          echo "Current .env.dev state:"
+          grep "XOLO_API_KEY" .env.dev || echo "Key not found in file"
         env:
           X_ADMIN_TOKEN: ${{ secrets.XOLO_ADMIN_TOKEN }}
 
-      - name: Start CALPULLI Service
-        run: |
-          # Now .env.dev has the fresh key
-          chmod +x deploy.sh && ./deploy.sh ${CALPULLI_PROFILE} ${{ env.CALPULLI_ENV_FILE_PATH || '.env.dev' }}
       - name: Start CALPULLI Service
         run: |
           chmod +x deploy.sh && ./deploy.sh ${CALPULLI_PROFILE} ${{ env.CALPULLI_ENV_FILE_PATH || '.env.dev' }}

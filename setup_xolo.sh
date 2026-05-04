@@ -10,7 +10,6 @@ echo "Waiting for Xolo API to be ready..."
 timeout 30s sh -c "until curl -s $XOLO_URL/docs > /dev/null; do sleep 1; done" || (echo "Xolo timed out" && exit 1)
 
 # 2. Creating Account
-# Double check if your router is mounted at /accounts, /api/accounts, or /api/v4/accounts
 echo "Creating Account..."
 ACCOUNT_URL="$XOLO_URL/api/v4/accounts"
 
@@ -58,3 +57,22 @@ if [ -n "$GITHUB_ENV" ]; then
 fi
 
 echo "Success: XOLO_API_KEY set in $ENV_FILE"
+
+
+
+echo "Verifying API Keys for account: calpulli_ci..."
+# This hits the GET /api/v4/accounts/{id}/apikeys endpoint
+METADATA_RESPONSE=$(curl -s -X GET "$XOLO_URL/api/v4/accounts/calpulli_ci/apikeys" \
+  -H "X-Admin-Token: $ADMIN_TOKEN")
+
+echo "Registered Key Metadata:"
+echo "$METADATA_RESPONSE" | jq '.'
+
+# Optional: Verify the key we just created is in the list
+FOUND=$(echo "$METADATA_RESPONSE" | jq -r ".[] | select(.name == \"ci_key\") | .key_id")
+
+if [ -n "$FOUND" ]; then
+  echo "Verification Success: Key '$FOUND' is active."
+else
+  echo "Verification Warning: Key not found in metadata list."
+fi
