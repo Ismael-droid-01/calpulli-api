@@ -80,3 +80,13 @@ if [ -n "$FOUND" ]; then
 else
   echo "Verification Warning: Key not found in metadata list."
 fi
+
+
+#  Create Scope
+curl --request POST \
+  --url http://localhost:10000/api/v4/accounts/$ACCOUNT_ID/scopes \
+  --header 'Content-Type: application/json' \
+  --header "X-Admin-Token: $ADMIN_TOKEN" \
+  --data '{
+  "name":"'"$scope"'"
+}'
