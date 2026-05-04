@@ -5,6 +5,7 @@ XOLO_URL="http://localhost:10000"
 ENV_FILE=".env.dev"
 ADMIN_TOKEN="${X_ADMIN_TOKEN:-admin_token_here}"
 ACCOUNT_ID="calpulli_ci"
+readonly scope="calpulli"
 # 1. Wait for the documentation page instead of /health
 echo "Waiting for Xolo API to be ready..."
 timeout 30s sh -c "until curl -s $XOLO_URL/docs > /dev/null; do sleep 1; done" || (echo "Xolo timed out" && exit 1)
