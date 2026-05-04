@@ -14,54 +14,91 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - calpulli-net
+
   xolo-db:
+    image: mongo:${XOLO_MONGO_IMAGE_TAG:-8-noble}
+    container_name: ${XOLO_MONGO_CONTAINER_NAME:-xolo-db}
     profiles: [prod,dev]
-    image: mongo:8-noble
+    env_file:
+      - ./deploy/env/mongodb.env
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
     ports:
-      - ${XOLO_MONGODB_PORT-27018}:27017
+      - "${XOLO_MONGODB_PUBLIC_PORT:-27018}:27017"
     volumes:
-      - xolo-db:/data/db
-      # - ./db/mongod.conf:/etc/mongo/mongod.conf:ro
+      - ${XOLO_MONGO_VOLUME_NAME:-xolo-mongodb-data}:/data/db
+      - ./db/mongod.conf:/etc/mongo/mongod.conf:ro
     networks:
       - calpulli-net
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped
-    command: ["mongod", "--bind_ip_all"]
-
 
   xolo-cache:
+    image: redis:${XOLO_REDIS_IMAGE_TAG:-7.0.11-alpine}
+    container_name: ${XOLO_REDIS_CONTAINER_NAME:-xolo-cache}
     profiles: [prod,dev]
-    image: redis:7.0.11-alpine
+    env_file:
+      - ./deploy/env/redis.env
+    command:
+      - sh
+      - -ec
+      - |
+        if [ -n "$${REDIS_REQUIREPASS}" ]; then
+          exec redis-server --appendonly "$${REDIS_APPENDONLY}" --save "$${REDIS_SAVE}" --requirepass "$${REDIS_REQUIREPASS}"
+        fi
+        exec redis-server --appendonly "$${REDIS_APPENDONLY}" --save "$${REDIS_SAVE}"
     ports:
-      - 6379:6379
+      - "${XOLO_REDIS_PUBLIC_PORT:-6379}:6379"
     volumes:
-      - xolo-cache-data:/data
+      - ${XOLO_REDIS_VOLUME_NAME:-xolo-redis-data}:/data
     networks:
       - calpulli-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if [ -n \"$${REDIS_REQUIREPASS}\" ]; then redis-cli -a \"$${REDIS_REQUIREPASS}\" ping; else redis-cli ping; fi",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   xolo:
     profiles: [prod,dev]
-    image: ${XOLO_IMAGE-xolo:api-0.0.11a2}
-    container_name: xolo-api
+    image: ${XOLO_IMAGE:-nachocode/xolo:api-0.1.0a0}
+    container_name: ${XOLO_API_CONTAINER_NAME:-xolo-api}
     env_file:
-      - .env.dev
+      - ${XOLO_APP_ENV_FILE:-./deploy/env/app.prod.env}
+    command:
+      - uvicorn
+      - xoloapi.server:app
+      - --host
+      - ${XOLO_HOST:-0.0.0.0}
+      - --port
+      - ${XOLO_PORT:-10000}
+      - --proxy-headers
+      - --forwarded-allow-ips=*
+      - --log-level
+      - ${XOLO_UVICORN_LOG_LEVEL:-info}
     ports:
-      - ${XOLO_PORT-10000}:${XOLO_PORT-10000}
+      - "${XOLO_API_PUBLIC_PORT:-10000}:${XOLO_PORT:-10000}"
     volumes:
-      # - /log:/log
-      - xolo-data:/xolo
+      - ${XOLO_DATA_VOLUME_NAME:-xolo-data}:/xolo
+      - ${XOLO_LOG_VOLUME_NAME:-xolo-logs}:/app/log
     networks:
       - calpulli-net
     restart: unless-stopped
-    depends_on:
-      - xolo-db
-    command: uvicorn xoloapi.server:app --host ${XOLO_HOST-0.0.0.0} --port ${XOLO_PORT-10000} --log-level debug
-
   calpulli:
     profiles: [prod]
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ${CALPULLI_DOCKERFILE:-Dockerfile}
     image: ${CALPULLI_IMAGE_NAME:-calpulli:api-0.0.1a0}
     env_file:
       - .env.dev
@@ -75,8 +112,9 @@ services:
       - xolo
 volumes:
   mysql_data:
-  xolo-db:
-  xolo-cache-data:
+  xolo-mongodb-data:
+  xolo-redis-data:
   xolo-data:
+  xolo-logs:
 networks:
  calpulli-net:
