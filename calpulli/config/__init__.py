@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-ENV_FILE_PATH = os.environ.get("CALPULLI_ENV_FILE_PATH", ".env")
+ENV_FILE_PATH = os.environ.get("CALPULLI_ENV_FILE_PATH", ".env.test")
 
 if os.path.exists(ENV_FILE_PATH):
     load_dotenv(ENV_FILE_PATH)
@@ -19,7 +19,7 @@ CALPULLI_LOAD_BALANCING_STRATEGY = os.environ.get("CALPULLI_LOAD_BALANCING_STRAT
 CALPULLI_WORKERS_COUNT           = int(os.environ.get("CALPULLI_WORKERS", 4))
 CALPULLI_WORKER_QUEUE_SIZE       = int(os.environ.get("CALPULLI_WORKER_QUEUE_SIZE", 100))
 CALPULLI_DATASET_SINK_PATH       = os.environ.get("CALPULLI_DATASET_SINK_PATH", "/calpulli/datasets/")
-XOLO_API_URL                     = os.environ.get("XOLO_API_URL","http://localhost:10000/api/v4")
+XOLO_API_URL                     = os.environ.get("CALPULLI_XOLO_API_URL","http://localhost:10000/api/v4")
 XOLO_SECRET_KEY                  = os.environ.get("XOLO_SECRET_KEY","default_secret_key")
 RORY_HOSTNAME                    = os.environ.get("RORY_HOSTNAME", "localhost")
 RORY_PORT                        = int(os.environ.get("RORY_PORT", 3001))
