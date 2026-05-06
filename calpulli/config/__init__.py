@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-ENV_FILE_PATH = os.environ.get("CALPULLI_ENV_FILE_PATH", ".env")
+ENV_FILE_PATH = os.environ.get("CALPULLI_ENV_FILE_PATH", ".env.test")
 
 if os.path.exists(ENV_FILE_PATH):
     load_dotenv(ENV_FILE_PATH)
